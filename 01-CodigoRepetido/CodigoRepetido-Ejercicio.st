@@ -45,16 +45,16 @@ assert: aCustomerBook shouldHaveRemovedCustomer: aCustomer
 	self deny: (aCustomerBook includesCustomerNamed: aCustomer )
 ! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'TO 4/11/2022 21:25:25'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'TO 4/16/2022 14:05:00'!
 assert: aBlock shouldNotTakeMoreThan: aTimeMeasure
 
 	| millisecondsBeforeRunning millisecondsAfterRunning |
 	
-	millisecondsBeforeRunning := Time millisecondClockValue * aTimeMeasure unit.
+	millisecondsBeforeRunning := Time millisecondClockValue * millisecond.
 	aBlock value.
-	millisecondsAfterRunning := Time millisecondClockValue * aTimeMeasure unit.
+	millisecondsAfterRunning := Time millisecondClockValue * millisecond.
 	
-	self assert: (millisecondsAfterRunning-millisecondsBeforeRunning) < aTimeMeasure! !
+	self assert: (millisecondsAfterRunning-millisecondsBeforeRunning) < (aTimeMeasure convertTo: millisecond)! !
 
 !CustomerBookTest methodsFor: 'testing' stamp: 'TO 4/11/2022 21:26:47'!
 newCustomerBookWith: aCustomer
