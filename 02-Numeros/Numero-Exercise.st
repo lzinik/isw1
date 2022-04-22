@@ -364,26 +364,29 @@ Numero subclass: #Entero
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:13'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'TO 4/21/2022 20:45:51'!
 * aMultiplier 
 	
+	(aMultiplier isKindOf: Fraccion) ifTrue: [ ^ aMultiplier * self ].
 	^self class with: value * aMultiplier integerValue
 	! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:13'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'TO 4/21/2022 21:14:14'!
 + anAdder 
 	
-	^self class with: value + anAdder integerValue
+	^ anAdder sumToEntero: self
 ! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'NR 9/23/2018 23:40:37'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'TO 4/21/2022 21:11:22'!
 - aSubtrahend 
 	
+	(aSubtrahend isKindOf: Fraccion) ifTrue: [ ^ aSubtrahend negated + self  ].
 	^ self class with: value - aSubtrahend integerValue.! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:14'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'TO 4/21/2022 20:52:02'!
 / aDivisor 
 	
+	(aDivisor isKindOf: Fraccion) ifTrue: [ ^ Fraccion with: aDivisor denominator * self over: aDivisor numerator ].
 	^Fraccion with: self over: aDivisor! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 21:55'!
@@ -409,6 +412,16 @@ fibonacci
 greatestCommonDivisorWith: anEntero 
 	
 	^self class with: (value gcd: anEntero integerValue)! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'TO 4/21/2022 21:12:35'!
+sumToEntero: anAdder
+	
+	^ self class with: value + anAdder integerValue! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'TO 4/21/2022 21:17:03'!
+sumToFraccion: anAdder
+	
+	^ anAdder sumToEntero: self! !
 
 
 !Entero methodsFor: 'comparing' stamp: 'HernanWilkinson 5/7/2016 21:01'!
@@ -483,37 +496,50 @@ Numero subclass: #Fraccion
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:14'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'TO 4/21/2022 20:46:34'!
 * aMultiplier 
 	
+	(aMultiplier isKindOf: Entero) ifTrue: [ ^ numerator  * aMultiplier / denominator ].
 	^(numerator * aMultiplier numerator) / (denominator * aMultiplier denominator)
 	! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:14'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'TO 4/21/2022 21:15:27'!
 + anAdder 
 	
-	| newNumerator newDenominator |
-	
-	newNumerator := (numerator * anAdder denominator) + (denominator * anAdder numerator).
-	newDenominator := denominator * anAdder denominator.
-	
-	^newNumerator / newDenominator ! !
+	^ anAdder sumToFraccion: self! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'NR 9/23/2018 23:43:50'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'TO 4/21/2022 21:07:55'!
 - aSubtrahend 
 	
 	| newNumerator newDenominator |
 	
+	(aSubtrahend isKindOf: Entero) ifTrue: [ ^ numerator - (denominator * aSubtrahend) / denominator ].
 	newNumerator := (numerator * aSubtrahend denominator) - (denominator * aSubtrahend numerator).
 	newDenominator := denominator * aSubtrahend denominator.
 	
 	^newNumerator / newDenominator 
 ! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:14'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'TO 4/21/2022 20:53:58'!
 / aDivisor 
 	
+	(aDivisor isKindOf: Entero) ifTrue: [ ^ numerator / (denominator * aDivisor) ].
 	^(numerator * aDivisor denominator) / (denominator * aDivisor numerator)! !
+
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'TO 4/21/2022 21:13:53'!
+sumToEntero: anAdder
+	
+	^ numerator + (denominator * anAdder) / denominator! !
+
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'TO 4/21/2022 21:14:58'!
+sumToFraccion: anAdder
+	
+	| newNumerator newDenominator |
+	
+	newNumerator := (numerator * anAdder denominator) + (denominator * anAdder numerator).
+	newDenominator := denominator * anAdder denominator.
+	
+	^ newNumerator / newDenominator ! !
 
 
 !Fraccion methodsFor: 'comparing' stamp: 'HernanWilkinson 5/7/2016 20:42'!
@@ -579,7 +605,7 @@ printOn: aStream
 Fraccion class
 	instanceVariableNames: ''!
 
-!Fraccion class methodsFor: 'intance creation' stamp: 'NR 9/23/2018 23:45:19'!
+!Fraccion class methodsFor: 'intance creation' stamp: 'TO 4/21/2022 20:37:44'!
 with: aDividend over: aDivisor
 
 	| greatestCommonDivisor numerator denominator |
@@ -596,4 +622,6 @@ with: aDividend over: aDivisor
 	denominator isOne ifTrue: [ ^numerator ].
 
 	^self new initializeWith: numerator over: denominator
+	
+	
 	! !
