@@ -144,6 +144,112 @@ TestCase subclass: #SentenceFinderByPrefixTest
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'TO 4/27/2022 18:15:59'!
+test01PrefixCannotBeEmpty
+
+	self should: [ SentenceFinderByPrefix with: '' ] 
+		raise: Error 
+		withExceptionDo: [ :error | self assert: error messageText equals: SentenceFinderByPrefix prefixCannotBeEmptyErrorDescription ]! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'TO 4/27/2022 18:18:54'!
+test02PrefixCannotStartWithBlanks
+
+	self should: [ SentenceFinderByPrefix with: ' a' ] 
+		raise: Error 
+		withExceptionDo: [ :error | self assert: error messageText equals: SentenceFinderByPrefix prefixCannotContainSeparatorErrorDescription ]! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'TO 4/27/2022 18:19:14'!
+test03PrefixCannotEndWithBlanks
+
+	self should: [ SentenceFinderByPrefix with: 'a ' ] 
+		raise: Error 
+		withExceptionDo: [ :error | self assert: error messageText equals: SentenceFinderByPrefix prefixCannotContainSeparatorErrorDescription ]! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'TO 4/27/2022 18:19:39'!
+test04PrefixCannotContainBlanks
+
+	self should: [ SentenceFinderByPrefix with: 'a b' ] 
+		raise: Error 
+		withExceptionDo: [ :error | self assert: error messageText equals: SentenceFinderByPrefix prefixCannotContainSeparatorErrorDescription ]! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'TO 4/27/2022 18:28:39'!
+test05ShouldNotFindAnySentencesInEmptyOOStack
+
+	| sentenceFinderByPrefix emptyStack |
+	sentenceFinderByPrefix := SentenceFinderByPrefix with: 'a'.
+	emptyStack := OOStack new.
+	
+	self assert: (sentenceFinderByPrefix selectSentencesFromOOStack: emptyStack) isEmpty ! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'TO 4/27/2022 18:36:44'!
+test06ShouldNotFindAnySentencesWithDifferentPrefixInOOStack
+
+	| sentenceFinderByPrefix stack |
+	sentenceFinderByPrefix := SentenceFinderByPrefix with: 'a'.
+	stack := OOStack new.
+	
+	stack push: 'b'.
+	stack push: 'c'.
+	self assert: (sentenceFinderByPrefix selectSentencesFromOOStack: stack) isEmpty ! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'TO 4/27/2022 18:36:56'!
+test07ShouldNotFindShorterSentencesThanPrefixInOOStack
+
+	| sentenceFinderByPrefix stack |
+	sentenceFinderByPrefix := SentenceFinderByPrefix with: 'abc'.
+	stack := OOStack new.
+	
+	stack push: ''.
+	stack push: 'a'.
+	stack push: 'ab'.
+	self assert: (sentenceFinderByPrefix selectSentencesFromOOStack: stack) isEmpty ! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'TO 4/27/2022 18:38:35'!
+test08ShouldFindSentencesThatBeginWithPrefixCaseSensitiveInOOStack
+
+	| sentenceFinderByPrefix stack selectedSentences |
+	sentenceFinderByPrefix := SentenceFinderByPrefix with: 'abc'.
+	stack := OOStack new.
+	
+	stack push: 'a'.
+	stack push: 'abc'.
+	stack push: 'Abc'.
+	stack push: 'abcd'.
+	selectedSentences := sentenceFinderByPrefix selectSentencesFromOOStack: stack.
+	
+	self assert: selectedSentences size equals: 2.
+	self assert: selectedSentences includes: 'abc'.
+	self assert: selectedSentences includes: 'abcd'.! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'TO 4/27/2022 18:43:02'!
+test09ShouldNotDeleteSelectedSentencesFromOStack
+
+	| sentenceFinderByPrefix stack |
+	sentenceFinderByPrefix := SentenceFinderByPrefix with: 'a'.
+	stack := OOStack new.
+	
+	stack push: 'a'.
+	sentenceFinderByPrefix selectSentencesFromOOStack: stack.
+
+	self assert: stack size equals: 1.
+	self assert: stack top equals: 'a'.! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'TO 4/27/2022 18:44:29'!
+test10ShouldNotModifyOOStackOrder
+
+	| sentenceFinderByPrefix stack |
+	sentenceFinderByPrefix := SentenceFinderByPrefix with: 'a'.
+	stack := OOStack new.
+	
+	stack push: 'a'.
+	stack push: 'ab'.
+	sentenceFinderByPrefix selectSentencesFromOOStack: stack.
+
+	self assert: stack size equals: 2.
+	self assert: stack top equals: 'ab'.
+	stack pop.
+	self assert: stack top equals: 'a'.! !
+
 
 !classDefinition: #OOStack category: 'Stack-Exercise'!
 Object subclass: #OOStack
@@ -319,15 +425,108 @@ initializeWith: anObject
 OOStackWithContent class
 	instanceVariableNames: ''!
 
-!OOStackWithContent class methodsFor: 'instance creation' stamp: 'LZ 4/25/2022 21:22:24'!
+!OOStackWithContent class methodsFor: 'instance creation' stamp: 'TO 4/27/2022 17:53:40'!
 with: anObject
 
-	^ self basicNew initializeWith: anObject ! !
+	^ self new initializeWith: anObject ! !
+
+
+!classDefinition: #OOStackIterator category: 'Stack-Exercise'!
+Object subclass: #OOStackIterator
+	instanceVariableNames: 'stack'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!OOStackIterator methodsFor: 'private' stamp: 'TO 4/27/2022 18:57:29'!
+restoreFromInverted: invertedStack
+
+	[ invertedStack isEmpty ] whileFalse: [
+		stack push: invertedStack pop.	
+	].! !
+
+
+!OOStackIterator methodsFor: 'enumerating' stamp: 'TO 4/27/2022 19:03:31'!
+do: aBlockToBeEvaluatedWithEachElement
+	
+	| invertedStack |
+	invertedStack := OOStack new.
+	[ stack isEmpty ] whileFalse: [
+		invertedStack push: stack pop.	
+		aBlockToBeEvaluatedWithEachElement value: invertedStack top.
+	].
+	self restoreFromInverted: invertedStack.! !
+
+!OOStackIterator methodsFor: 'enumerating' stamp: 'TO 4/27/2022 19:04:27'!
+select: aConditionBlock
+	
+	| selectedElements |
+	selectedElements := OrderedCollection new.
+	self do: [ :each | (aConditionBlock value: each) ifTrue: [ selectedElements add: each].].
+	
+	^ selectedElements.! !
+
+
+!OOStackIterator methodsFor: 'initialization' stamp: 'TO 4/27/2022 18:49:34'!
+initializeWith: anOOStack
+
+	stack := anOOStack ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'OOStackIterator class' category: 'Stack-Exercise'!
+OOStackIterator class
+	instanceVariableNames: ''!
+
+!OOStackIterator class methodsFor: 'instance creation' stamp: 'TO 4/27/2022 18:48:50'!
+with: anOOStack
+
+	^ self new initializeWith: anOOStack! !
 
 
 !classDefinition: #SentenceFinderByPrefix category: 'Stack-Exercise'!
 Object subclass: #SentenceFinderByPrefix
-	instanceVariableNames: ''
+	instanceVariableNames: 'prefix'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
+
+!SentenceFinderByPrefix methodsFor: 'initialization' stamp: 'TO 4/27/2022 18:10:09'!
+initializeWith: aPrefix
+	
+	prefix := aPrefix ! !
+
+
+!SentenceFinderByPrefix methodsFor: 'enumerating' stamp: 'TO 4/27/2022 18:53:51'!
+selectSentencesFromOOStack: anOOStack
+
+	| stackIterator |
+	
+	stackIterator := OOStackIterator with: anOOStack.	
+
+	^ stackIterator select: [ :aSentence | aSentence beginsWith: prefix ]! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'SentenceFinderByPrefix class' category: 'Stack-Exercise'!
+SentenceFinderByPrefix class
+	instanceVariableNames: ''!
+
+!SentenceFinderByPrefix class methodsFor: 'error descriptions' stamp: 'TO 4/27/2022 18:02:03'!
+prefixCannotBeEmptyErrorDescription
+
+	^ 'El prefijo no puede ser vacío'! !
+
+!SentenceFinderByPrefix class methodsFor: 'error descriptions' stamp: 'TO 4/27/2022 18:08:27'!
+prefixCannotContainSeparatorErrorDescription
+
+	^ 'El prefijo no puede contener espacios vacíos'! !
+
+
+!SentenceFinderByPrefix class methodsFor: 'instance creation' stamp: 'TO 4/27/2022 18:09:48'!
+with: aPrefix
+	
+	aPrefix isEmpty ifTrue: [self error: self prefixCannotBeEmptyErrorDescription ].
+	aPrefix withoutSeparators = aPrefix ifFalse: [self error: self prefixCannotContainSeparatorErrorDescription ].
+
+	^ self new initializeWith: aPrefix! !
