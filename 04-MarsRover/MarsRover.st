@@ -5,6 +5,34 @@ TestCase subclass: #MarsRoverTest
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
+!MarsRoverTest methodsFor: 'assertions' stamp: 'TO 5/14/2022 16:34:32'!
+allRoversShouldBeAt: finalPositions pointingTowards: finalDirections afterReceiving: aSequenceOfCommands whenStartingAt: startingPositions
+
+	self roverShouldBeAt: (finalPositions at: 1) pointingTowards: (finalDirections at: 1) afterReceiving: aSequenceOfCommands whenStartingAt: (startingPositions at: 1) pointingTowards: north.
+	self roverShouldBeAt: (finalPositions at: 2) pointingTowards: (finalDirections at: 2) afterReceiving: aSequenceOfCommands whenStartingAt: (startingPositions at: 2) pointingTowards: south.
+	self roverShouldBeAt: (finalPositions at: 3) pointingTowards: (finalDirections at: 3) afterReceiving: aSequenceOfCommands whenStartingAt: (startingPositions at: 3) pointingTowards: east.
+	self roverShouldBeAt: (finalPositions at: 4) pointingTowards: (finalDirections at: 4) afterReceiving: aSequenceOfCommands whenStartingAt: (startingPositions at: 4) pointingTowards: west.! !
+
+!MarsRoverTest methodsFor: 'assertions' stamp: 'TO 5/14/2022 16:21:08'!
+allRoversShouldPointTo: finalDirections afterTurning: aTurningCommand
+
+	| marsRoverStartingPositions |
+	marsRoverStartingPositions := OrderedCollection with: 0@0  with: 0@0 with: 0@0 with: 0@0.
+	
+	self allRoversShouldBeAt: marsRoverStartingPositions pointingTowards: finalDirections afterReceiving: aTurningCommand whenStartingAt: marsRoverStartingPositions.! !
+
+!MarsRoverTest methodsFor: 'assertions' stamp: 'TO 5/14/2022 16:28:53'!
+roverShouldBeAt: finalPosition pointingTowards: finalDirection afterReceiving: aSequenceOfCommands whenStartingAt: startingPosition pointingTowards: startingDirection    
+
+	| marsRover commands | 
+	marsRover := MarsRover pointingToward: startingDirection at: startingPosition.
+	
+	commands := aSequenceOfCommands.
+	
+	marsRover process: commands.
+	
+	self should: marsRover beAt: finalPosition pointingTowards: finalDirection.! !
+
 !MarsRoverTest methodsFor: 'assertions' stamp: 'TO 5/13/2022 15:42:16'!
 should: marsRover beAt: aPosition pointingTowards: aMarsRoverDirection  
 
@@ -12,124 +40,70 @@ should: marsRover beAt: aPosition pointingTowards: aMarsRoverDirection
 	self assert: marsRover direction equals: aMarsRoverDirection! !
 
 
-!MarsRoverTest methodsFor: 'set up' stamp: 'TO 5/13/2022 15:46:50'!
+!MarsRoverTest methodsFor: 'set up' stamp: 'TO 5/14/2022 14:19:45'!
 setUp
-
+	
 	east := MarsRoverDirectionEast new.
 	north := MarsRoverDirectionNorth new.
 	south := MarsRoverDirectionSouth new.
 	west := MarsRoverDirectionWest new! !
 
 
-!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/13/2022 15:47:04'!
+!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/14/2022 16:29:26'!
 test01MarsRoverShouldNotMoveWhenReceivesEmptyString
 
-	| marsRover | 
-	marsRover := MarsRover pointingToward: north at: 0@0.
-	
-	marsRover process: ''.
-	self should: marsRover beAt: 0@0 pointingTowards: north
+	self roverShouldBeAt: 0@0 pointingTowards: north afterReceiving: '' whenStartingAt: 0@0 pointingTowards: north.
 	
 	! !
 
-!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/13/2022 15:48:50'!
+!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/14/2022 16:18:13'!
 test02MarsRoverShouldMoveTowardHeadingWhenReceivesOneForward
 
-	| marsRoverPointingNorth marsRoverPointingSouth marsRoverPointingEast marsRoverPointingWest command | 
-	marsRoverPointingNorth := MarsRover pointingToward: north at: 1@1.
-	marsRoverPointingSouth := MarsRover pointingToward: south at: 7@3.
-	marsRoverPointingEast := MarsRover pointingToward: east at: -5@-9.
-	marsRoverPointingWest := MarsRover pointingToward: west at: -34@43.	
+       | marsRoverStartingPositions marsRoverFinalPositions marsRoverFinalDirections |
+	marsRoverStartingPositions := OrderedCollection with: 1@1  with: 7@3 with: -5@-9 with: -34@43.
+	marsRoverFinalPositions := OrderedCollection with: 1@2 with: 7@2 with: -4@-9 with: -35@43.
+	marsRoverFinalDirections := OrderedCollection with: north with: south with: east with: west.
 	
-	command := 'f'.
-	
-	marsRoverPointingNorth process: command.
-	marsRoverPointingSouth process: command.	
-	marsRoverPointingEast process: command.	
-	marsRoverPointingWest process: command.	
-	
-	self should: marsRoverPointingNorth beAt: 1@2 pointingTowards: north.
-	self should: marsRoverPointingSouth beAt: 7@2 pointingTowards: south.
-	self should: marsRoverPointingEast beAt: -4@-9 pointingTowards: east.
-	self should: marsRoverPointingWest beAt: -35@43 pointingTowards: west	.
-	! !
+	self allRoversShouldBeAt: marsRoverFinalPositions pointingTowards: marsRoverFinalDirections afterReceiving: 'f' whenStartingAt: marsRoverStartingPositions.! !
 
-!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/13/2022 15:47:42'!
+!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/14/2022 16:18:27'!
 test03MarsRoverShouldMoveOppositeToDirectionWhenReceivesOneBackward
 
-	| marsRoverPointingNorth marsRoverPointingSouth marsRoverPointingEast marsRoverPointingWest command | 
-	marsRoverPointingNorth := MarsRover pointingToward: north at: -8@7.
-	marsRoverPointingSouth := MarsRover pointingToward: south at: 89@-45.
-	marsRoverPointingEast := MarsRover pointingToward: east at: 4@4.
-	marsRoverPointingWest := MarsRover pointingToward: west at: 56@-34.	
+	| marsRoverStartingPositions marsRoverFinalPositions marsRoverFinalDirections |
+	marsRoverStartingPositions := OrderedCollection with: -8@7  with: 89@-45 with: 4@4 with: 56@-34.
+	marsRoverFinalPositions := OrderedCollection with: -8@6 with: 89@-44 with: 3@4 with: 57@-34.
+	marsRoverFinalDirections := OrderedCollection with: north with: south with: east with: west.
 	
-	command := 'b'.
-	
-	marsRoverPointingNorth process: command.
-	marsRoverPointingSouth process: command.	
-	marsRoverPointingEast process: command.	
-	marsRoverPointingWest process: command.	
-	
-	self should: marsRoverPointingNorth beAt: -8@6 pointingTowards: north.
-	self should: marsRoverPointingSouth beAt: 89@-44 pointingTowards: south.
-	self should: marsRoverPointingEast beAt: 3@4 pointingTowards: east.
-	self should: marsRoverPointingWest beAt: 57@-34 pointingTowards: west.! !
+	self allRoversShouldBeAt: marsRoverFinalPositions pointingTowards: marsRoverFinalDirections afterReceiving: 'b' whenStartingAt: marsRoverStartingPositions.! !
 
-!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/13/2022 15:47:56'!
+!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/14/2022 16:21:22'!
 test04MarsRoverShouldRotateLeftWhenReceivesOneLeft
 
-	| marsRoverPointingNorth marsRoverPointingSouth marsRoverPointingEast marsRoverPointingWest command | 
-	marsRoverPointingNorth := MarsRover pointingToward: north at: 0@0.
-	marsRoverPointingSouth := MarsRover pointingToward: south at: 0@0.
-	marsRoverPointingEast := MarsRover pointingToward: east at: 0@0.
-	marsRoverPointingWest := MarsRover pointingToward: west at: 0@0.	
+	| marsRoverFinalDirections |
+	marsRoverFinalDirections := OrderedCollection with: west with: east with: north with: south.
 	
-	command := 'l'.
-	
-	marsRoverPointingNorth process: command.
-	marsRoverPointingSouth process: command.	
-	marsRoverPointingEast process: command.	
-	marsRoverPointingWest process: command.	
-	
-	self should: marsRoverPointingNorth beAt: 0@0 pointingTowards: west.
-	self should: marsRoverPointingSouth beAt: 0@0 pointingTowards: east.
-	self should: marsRoverPointingEast beAt: 0@0 pointingTowards: north.
-	self should: marsRoverPointingWest beAt: 0@0 pointingTowards: south.	
-	! !
+	self allRoversShouldPointTo: marsRoverFinalDirections afterTurning: 'l'.! !
 
-!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/13/2022 15:48:17'!
+!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/14/2022 16:21:34'!
 test05MarsRoverShouldRotateRightWhenReceivesOneRight
 
-	| marsRoverPointingNorth marsRoverPointingSouth marsRoverPointingEast marsRoverPointingWest command | 
-	marsRoverPointingNorth := MarsRover pointingToward: north at: 0@0.
-	marsRoverPointingSouth := MarsRover pointingToward: south at: 0@0.
-	marsRoverPointingEast := MarsRover pointingToward: east at: 0@0.
-	marsRoverPointingWest := MarsRover pointingToward: west at: 0@0.	
+	| marsRoverFinalDirections |
+	marsRoverFinalDirections := OrderedCollection with: east with: west with: south with: north.
 	
-	command := 'r'.
-	
-	marsRoverPointingNorth process: command.
-	marsRoverPointingSouth process: command.	
-	marsRoverPointingEast process: command.	
-	marsRoverPointingWest process: command.	
-	
-	self should: marsRoverPointingNorth beAt: 0@0 pointingTowards: east.
-	self should: marsRoverPointingEast beAt: 0@0 pointingTowards: south.
-	self should: marsRoverPointingSouth beAt: 0@0 pointingTowards: west.
-	self should: marsRoverPointingWest beAt: 0@0 pointingTowards: north.
+	self allRoversShouldPointTo: marsRoverFinalDirections afterTurning: 'r'.
 	! !
 
-!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/13/2022 15:03:10'!
+!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/14/2022 16:26:26'!
 test06MarsRoverShouldProcessMultipleCommands
 
-	"
-	| marsRover | 
-	marsRover := MarsRover pointingToward: #North.
+	self roverShouldBeAt: 1@1 pointingTowards: west afterReceiving: 'ffrfflblf' whenStartingAt: 0@0 pointingTowards: north.
+	
+	! !
 
-	marsRover process: 'ffrf'.
-	
-	self should: marsRover beAt: 1@2 pointingTowards: #East"
-	
+!MarsRoverTest methodsFor: 'tests' stamp: 'TO 5/14/2022 16:32:25'!
+test07MarsRoverShouldStopProcessingCommandsIfReceivesInvalidCommand
+
+	self roverShouldBeAt: 11@3 pointingTowards: east afterReceiving: 'fflfgfff' whenStartingAt: 10@5 pointingTowards: south.
 	! !
 
 
@@ -145,30 +119,30 @@ moveBackwards
 
 	direction moveBackwards: self! !
 
-!MarsRover methodsFor: 'moving' stamp: 'TO 5/13/2022 15:14:20'!
+!MarsRover methodsFor: 'moving' stamp: 'TO 5/14/2022 14:14:07'!
 moveEast
 
-	^ position := (position x + 1) @ position y! !
+	position := (position x + 1) @ position y! !
 
 !MarsRover methodsFor: 'moving' stamp: 'TO 5/13/2022 15:30:48'!
 moveForward
 
 	direction moveForward: self! !
 
-!MarsRover methodsFor: 'moving' stamp: 'TO 5/13/2022 15:13:37'!
+!MarsRover methodsFor: 'moving' stamp: 'TO 5/14/2022 14:14:12'!
 moveNorth
 
-	^ position := position x @ (position y + 1)! !
+	position := position x @ (position y + 1)! !
 
-!MarsRover methodsFor: 'moving' stamp: 'TO 5/13/2022 15:14:06'!
+!MarsRover methodsFor: 'moving' stamp: 'TO 5/14/2022 14:14:17'!
 moveSouth
 
-	^ position := position x @ (position y - 1)! !
+	position := position x @ (position y - 1)! !
 
-!MarsRover methodsFor: 'moving' stamp: 'TO 5/13/2022 15:14:33'!
+!MarsRover methodsFor: 'moving' stamp: 'TO 5/14/2022 14:14:22'!
 moveWest
 
-	^ position := (position x - 1) @ position y! !
+	position := (position x - 1) @ position y! !
 
 
 !MarsRover methodsFor: 'turning' stamp: 'TO 5/13/2022 15:31:22'!
@@ -182,14 +156,28 @@ turnRight
 	direction := direction right! !
 
 
-!MarsRover methodsFor: 'command processing' stamp: 'TO 5/12/2022 21:16:59'!
-process: aCommand 
+!MarsRover methodsFor: 'command processing - private' stamp: 'TO 5/14/2022 15:47:49'!
+copy: aSequenceOfCommands upTo: invalidCommand
+
+	^ aSequenceOfCommands copyFrom: 1 to: (aSequenceOfCommands indexOf: invalidCommand ) - 1! !
+
+!MarsRover methodsFor: 'command processing - private' stamp: 'TO 5/14/2022 15:46:44'!
+validCommandsUpToFirstInvalid: aSequenceOfCommands
+
+	^ aSequenceOfCommands detect: [ : aPossiblyInvalidCommand | MarsRoverCommand  isInvalid: aPossiblyInvalidCommand ] ifFound: [ : invalidCommand | 
+		self copy: aSequenceOfCommands upTo: invalidCommand ] ifNone: aSequenceOfCommands! !
+
+
+!MarsRover methodsFor: 'command processing' stamp: 'TO 5/14/2022 15:42:48'!
+process: aSequenceOfCommands 
 	
-	aCommand = 'f' ifTrue: [ self moveForward ].
-	aCommand = 'ff' ifTrue: [ self moveForward. self moveForward ].
-	aCommand = 'b' ifTrue: [ self moveBackwards ].
-	aCommand = 'l' ifTrue: [ self turnLeft ].
-	aCommand = 'r' ifTrue: [ self turnRight ].! !
+	| sequenceOfValidCommandsUpToFirstInvalid |
+	sequenceOfValidCommandsUpToFirstInvalid := self validCommandsUpToFirstInvalid: aSequenceOfCommands.
+	
+	sequenceOfValidCommandsUpToFirstInvalid do: [ : aCommand |
+		(MarsRoverCommand for: aCommand) sendCommand: self.
+	].
+	! !
 
 
 !MarsRover methodsFor: 'initialization' stamp: 'TO 5/13/2022 15:05:37'!
@@ -219,6 +207,137 @@ MarsRover class
 pointingToward: aDirection at: aPosition 
 	
 	^ self new initializePointingToward: aDirection at: aPosition! !
+
+
+!classDefinition: #MarsRoverCommand category: 'MarsRover'!
+Object subclass: #MarsRoverCommand
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MarsRover'!
+
+!MarsRoverCommand methodsFor: 'command sending' stamp: 'TO 5/14/2022 15:34:50'!
+sendCommand: aMarsRoverWaitingForACommand
+	
+	self subclassResponsibility ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'MarsRoverCommand class' category: 'MarsRover'!
+MarsRoverCommand class
+	instanceVariableNames: ''!
+
+!MarsRoverCommand class methodsFor: 'instance creation' stamp: 'TO 5/14/2022 15:40:49'!
+for: aCommand
+	
+	^ (self allSubclasses detect: [ : aMarsRoverCommandClass | aMarsRoverCommandClass isFor: aCommand ]) new.! !
+
+!MarsRoverCommand class methodsFor: 'instance creation' stamp: 'TO 5/14/2022 15:40:49'!
+isFor: aCommand
+	
+	self subclassResponsibility ! !
+
+
+!MarsRoverCommand class methodsFor: 'command validation' stamp: 'TO 5/14/2022 15:45:00'!
+isInvalid: aCommand
+	
+	^ self allSubclasses noneSatisfy: [: aMarsRoverCommandClass | aMarsRoverCommandClass isFor: aCommand ].! !
+
+
+!classDefinition: #MarsRoverBackwardsCommand category: 'MarsRover'!
+MarsRoverCommand subclass: #MarsRoverBackwardsCommand
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MarsRover'!
+
+!MarsRoverBackwardsCommand methodsFor: 'command sending' stamp: 'TO 5/14/2022 15:36:07'!
+sendCommand: aMarsRoverWaitingForACommand
+	
+	aMarsRoverWaitingForACommand moveBackwards! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'MarsRoverBackwardsCommand class' category: 'MarsRover'!
+MarsRoverBackwardsCommand class
+	instanceVariableNames: ''!
+
+!MarsRoverBackwardsCommand class methodsFor: 'instance creation' stamp: 'TO 5/14/2022 15:40:49'!
+isFor: aCommand
+	
+	^ aCommand = $b! !
+
+
+!classDefinition: #MarsRoverForwardCommand category: 'MarsRover'!
+MarsRoverCommand subclass: #MarsRoverForwardCommand
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MarsRover'!
+
+!MarsRoverForwardCommand methodsFor: 'command sending' stamp: 'TO 5/14/2022 15:36:23'!
+sendCommand: aMarsRoverWaitingForACommand
+	
+	aMarsRoverWaitingForACommand moveForward ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'MarsRoverForwardCommand class' category: 'MarsRover'!
+MarsRoverForwardCommand class
+	instanceVariableNames: ''!
+
+!MarsRoverForwardCommand class methodsFor: 'instance creation' stamp: 'TO 5/14/2022 15:40:49'!
+isFor: aCommand
+	
+	^ aCommand = $f! !
+
+
+!classDefinition: #MarsRoverTurnLeftCommand category: 'MarsRover'!
+MarsRoverCommand subclass: #MarsRoverTurnLeftCommand
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MarsRover'!
+
+!MarsRoverTurnLeftCommand methodsFor: 'command sending' stamp: 'TO 5/14/2022 15:36:38'!
+sendCommand: aMarsRoverWaitingForACommand
+	
+	aMarsRoverWaitingForACommand turnLeft ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'MarsRoverTurnLeftCommand class' category: 'MarsRover'!
+MarsRoverTurnLeftCommand class
+	instanceVariableNames: ''!
+
+!MarsRoverTurnLeftCommand class methodsFor: 'instance creation' stamp: 'TO 5/14/2022 15:40:49'!
+isFor: aCommand
+	
+	^ aCommand = $l! !
+
+
+!classDefinition: #MarsRoverTurnRightCommand category: 'MarsRover'!
+MarsRoverCommand subclass: #MarsRoverTurnRightCommand
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MarsRover'!
+
+!MarsRoverTurnRightCommand methodsFor: 'command sending' stamp: 'TO 5/14/2022 15:36:51'!
+sendCommand: aMarsRoverWaitingForACommand
+	
+	aMarsRoverWaitingForACommand turnRight ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'MarsRoverTurnRightCommand class' category: 'MarsRover'!
+MarsRoverTurnRightCommand class
+	instanceVariableNames: ''!
+
+!MarsRoverTurnRightCommand class methodsFor: 'instance creation' stamp: 'TO 5/14/2022 15:40:49'!
+isFor: aCommand
+	
+	^ aCommand = $r! !
 
 
 !classDefinition: #MarsRoverDirection category: 'MarsRover'!
