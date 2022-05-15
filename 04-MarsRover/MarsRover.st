@@ -33,11 +33,16 @@ roverShouldBeAt: finalPosition pointingTowards: finalDirection afterReceiving: a
 	
 	self should: marsRover beAt: finalPosition pointingTowards: finalDirection.! !
 
-!MarsRoverTest methodsFor: 'assertions' stamp: 'TO 5/13/2022 15:42:16'!
+!MarsRoverTest methodsFor: 'assertions' stamp: 'TO 5/15/2022 10:09:55'!
 should: marsRover beAt: aPosition pointingTowards: aMarsRoverDirection  
 
 	self assert: marsRover position equals: aPosition.
-	self assert: marsRover direction equals: aMarsRoverDirection! !
+	self should: marsRover pointTowards: aMarsRoverDirection! !
+
+!MarsRoverTest methodsFor: 'assertions' stamp: 'TO 5/15/2022 10:09:39'!
+should: marsRover pointTowards: aMarsRoverDirection
+
+	^ self assert: (marsRover direction isKindOf: aMarsRoverDirection class)! !
 
 
 !MarsRoverTest methodsFor: 'set up' stamp: 'TO 5/14/2022 14:19:45'!
@@ -357,12 +362,6 @@ moveForward: aMarsRoverMovingForward
 
 	self subclassResponsibility 
 	! !
-
-
-!MarsRoverDirection methodsFor: 'comparing' stamp: 'TO 5/13/2022 15:41:23'!
-= anotherMarsRoverDirection
-
-	^ anotherMarsRoverDirection isKindOf: self class! !
 
 
 !MarsRoverDirection methodsFor: 'directions position' stamp: 'TO 5/13/2022 15:37:20'!
