@@ -55,45 +55,45 @@ test01PortfoliosHaveZeroBalanceWhenCreated
 
 	self assert: portfolio hasBalanceOf: 0.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 20:12:43'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 11:58:26'!
 test02PortfolioWithOneAccountBalanceEqualsOneAccountBalance
 	
 	| portfolio |
 	
-	portfolio := self portfolioWithOneAccountWithADepositOf: 50.
+	portfolio := self portfolioWithOneAccountWithADepositOf50.
 
 	self assert: portfolio hasBalanceOf: 50.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 20:16:06'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 11:58:26'!
 test03PortfolioWithOnePortfolioBalanceEqualsOnePortfolioBalance
 	
 	| mainPortfolio secondaryPortfolio |
 	
-	secondaryPortfolio := self portfolioWithOneAccountWithADepositOf: 50.
+	secondaryPortfolio := self portfolioWithOneAccountWithADepositOf50.
 	
 	mainPortfolio := self portfolioWith: secondaryPortfolio.
 
 	self assert: mainPortfolio hasBalanceOf: secondaryPortfolio balance.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 20:13:50'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 11:58:26'!
 test04PorfolioWithOnePortfolioAndOneAccountBalanceIsSumOfBothBalances
 	
 	| mainPortfolio secondaryPortfolio |
 	
-	secondaryPortfolio := self portfolioWithOneAccountWithADepositOf: 50.
+	secondaryPortfolio := self portfolioWithOneAccountWithADepositOf50.
 	
-	mainPortfolio := self portfolioWithOneAccountWithADepositOf: 50.
+	mainPortfolio := self portfolioWithOneAccountWithADepositOf50.
 	mainPortfolio add: secondaryPortfolio.
 
 	self assert: mainPortfolio hasBalanceOf: secondaryPortfolio balance  + 50.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 20:14:20'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:02:09'!
 test05PorfolioWithManyPortfoliosAndAccountsBalanceIsSumOfAllBalances
 	
 	| mainPortfolio portfolio1 portfolio2 |
 	
-	portfolio1 := self portfolioWithOneAccountWithADepositOf: 50.	
-	portfolio2 := self portfolioWithOneAccountWithADepositOf: 50 andAnotherWithADepositOf: 100.
+	portfolio1 := self portfolioWithOneAccountWithADepositOf50.	
+	portfolio2 := self portfolioWithAccountWithADepositOf50AndAnotherAccountWithADepositOf100.
 	
 	mainPortfolio := self portfolioWithOneAccountWithADepositOf: 50 andAnotherWithADepositOf: 150.
 	mainPortfolio add: portfolio1.
@@ -101,33 +101,33 @@ test05PorfolioWithManyPortfoliosAndAccountsBalanceIsSumOfAllBalances
 
 	self assert: mainPortfolio hasBalanceOf: portfolio1 balance + portfolio2 balance + 50 + 150.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 20:32:57'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:03:12'!
 test06PortfolioWithNoAccountsHasNotRegisteredATransaction
 	
 	| portfolio account |
 	
 	portfolio := Portfolio new.
-	account := self receptiveAccountWithADepositOf: 50.
+	account := self receptiveAccountWithADepositOf50.
 
 	self deny: portfolio hasRegistered: account transactions first.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 20:37:35'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:04:12'!
 test07PortfolioWithAccountsHasRegisteredAccountsTransactions
 	
 	| portfolio account |
 	
-	account := self receptiveAccountWithADepositOf: 50 andAnotherDepositOf: 100.
+	account := self receptiveAccountWithDepositsOf50And100.
 	
 	portfolio := self portfolioWith: account.
 	
 	self assert: portfolio hasRegistredAllTransactionsOf: account.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 20:38:19'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:04:12'!
 test08PortfolioWithPortfoliosWithAccountsHasRegisteredTransactions
 	
 	| mainPortfolio secondaryPortfolio account|
 	
-	account := self receptiveAccountWithADepositOf: 50 andAnotherDepositOf: 100.
+	account := self receptiveAccountWithDepositsOf50And100.
 	
 	secondaryPortfolio := self portfolioWith: account.
 	
@@ -145,58 +145,55 @@ test09EmptyPortfolioHasNoTransactions
 	
 	self assert: portfolio transactions isEmpty! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 20:50:49'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:05:24'!
 test10PortfolioHasInnerAccountsTransactions
 	
 	| portfolio account1 account2 |
-	account1 := self receptiveAccountWithADepositOf: 10.
-	account2 := self receptiveAccountWithADepositOf: 30 andAnotherDepositOf: 20.	
+	account1 := self receptiveAccountWithADepositOf50.
+	account2 := self receptiveAccountWithDepositsOf50And100.	
 	
 	portfolio := self portfolioWith: account1 with: account2.
 	
 	self assert: portfolio hasAllTransactionsOf: account1 andAllTransactionsOf: account2.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 20:51:36'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:06:10'!
 test11PortfolioWithPortfoliosHasInnerAccountsTransactions
 	
 	| mainPortfolio portfolio1 portfolio2 |
-	portfolio1 := self portfolioWithOneAccountWithADepositOf: 10.
-	portfolio2 := self portfolioWithOneAccountWithADepositOf: 20 andAnotherWithADepositOf: 30.
+	portfolio1 := self portfolioWithOneAccountWithADepositOf50.
+	portfolio2 := self portfolioWithAccountWithADepositOf50AndAnotherAccountWithADepositOf100.
 	
 	mainPortfolio := self portfolioWith: portfolio1 with: portfolio2.
 	
 	self assert: mainPortfolio hasAllTransactionsOf: portfolio1 andAllTransactionsOf: portfolio2.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 20:55:01'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:06:39'!
 test12PortfolioShouldRaiseErrorWhenAddingTransactionRecordTwice
 	
 	| portfolio account |
-	account := self receptiveAccountWithADepositOf: 10.
+	account := self receptiveAccountWithADepositOf50.
 	
 	portfolio := self portfolioWith: account.
 	
 	self should: portfolio raiseWhenAddingDuplicated: account.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 20:55:22'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:07:28'!
 test13PortfolioWithChildPortfolioShouldRaiseErrorWhenAddingAnAccountThatAlreadyExistsInChildPorfolio
 	
 	| mainPortfolio secondaryPortfolio account |
-	account := self receptiveAccountWithADepositOf: 10.
+	account := self receptiveAccountWithADepositOf50.
 	
-	secondaryPortfolio := Portfolio new.
-	secondaryPortfolio add: account.
+	secondaryPortfolio := self portfolioWith: account.
 	
-	mainPortfolio := Portfolio new.
-	mainPortfolio add: secondaryPortfolio.
+	mainPortfolio := self portfolioWith: secondaryPortfolio.
 	
 	self should: mainPortfolio raiseWhenAddingDuplicated: account.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 20:58:23'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:08:08'!
 test14PortfolioWithChildPortfolioShouldRaiseErrorWhenAddingAPortfolioThatAlreadyExistsInChildPorfolio
 	
 	| mainPortfolio secondaryPortfolio tertiaryPortfolio |
-	
-	tertiaryPortfolio := self portfolioWithOneAccountWithADepositOf: 10.
+	tertiaryPortfolio := self portfolioWithOneAccountWithADepositOf50.
 	
 	secondaryPortfolio := self portfolioWith: tertiaryPortfolio.
 	
@@ -204,12 +201,12 @@ test14PortfolioWithChildPortfolioShouldRaiseErrorWhenAddingAPortfolioThatAlready
 	
 	self should: mainPortfolio raiseWhenAddingDuplicated: tertiaryPortfolio.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 21:01:53'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:08:26'!
 test15PortfolioWithAccountShouldRaiseErrorWhenAddingAPortfolioAndSameAccountToThatPortfolio
 	
 	| mainPortfolio secondaryPortfolio account |
 	
-	account := self receptiveAccountWithADepositOf: 10.
+	account := self receptiveAccountWithADepositOf50.
 	
 	secondaryPortfolio := Portfolio new.
 	
@@ -217,12 +214,12 @@ test15PortfolioWithAccountShouldRaiseErrorWhenAddingAPortfolioAndSameAccountToTh
 	
 	self should: secondaryPortfolio raiseWhenAddingDuplicated: account.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 21:03:28'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:09:34'!
 test16PortfolioShouldRaiseErrorWhenAddingATransactionRecordThatExistsMoreThanOneLevelUpInTheTree
 	
 	| mainPortfolio secondaryPortfolio tertiaryPortfolio account |
 
-	account := self receptiveAccountWithADepositOf: 10.
+	account := self receptiveAccountWithADepositOf50.
 	
 	tertiaryPortfolio := Portfolio new.
 	
@@ -232,12 +229,12 @@ test16PortfolioShouldRaiseErrorWhenAddingATransactionRecordThatExistsMoreThanOne
 	
 	self should: tertiaryPortfolio raiseWhenAddingDuplicated: account.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 21:04:11'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:10:12'!
 test17PortfolioWithAccountShouldRaiseErrorWhenAddingAnotherPortfolioWithSameAccount
 	
 	| mainPortfolio secondaryPortfolio account |
 	
-	account := self receptiveAccountWithADepositOf: 10.
+	account := self receptiveAccountWithADepositOf50.
 	
 	mainPortfolio := self portfolioWith: account.
 	
@@ -245,12 +242,12 @@ test17PortfolioWithAccountShouldRaiseErrorWhenAddingAnotherPortfolioWithSameAcco
 	
 	self should: mainPortfolio raiseWhenAddingDuplicated: secondaryPortfolio.! !
 
-!PortfolioTest methodsFor: 'tests' stamp: 'LZ 5/21/2022 21:05:05'!
+!PortfolioTest methodsFor: 'tests' stamp: 'TO 5/22/2022 12:10:22'!
 test18PortfolioWithChildPortfolioWithAccountShouldRaiseErrorWhenAddingAThirdPortfolioWithSameAccount
 	
 	| mainPortfolio secondaryPortfolio tertiaryPortfolio account |
 
-	account := self receptiveAccountWithADepositOf: 10.
+	account := self receptiveAccountWithADepositOf50.
 
 	secondaryPortfolio := self portfolioWith: account.
 
@@ -260,6 +257,11 @@ test18PortfolioWithChildPortfolioWithAccountShouldRaiseErrorWhenAddingAThirdPort
 	
 	self should: mainPortfolio raiseWhenAddingDuplicated: tertiaryPortfolio.! !
 
+
+!PortfolioTest methodsFor: 'receptive accounts' stamp: 'TO 5/22/2022 12:03:12'!
+receptiveAccountWithADepositOf50
+
+	^ self receptiveAccountWithADepositOf: 50! !
 
 !PortfolioTest methodsFor: 'receptive accounts' stamp: 'LZ 5/21/2022 20:32:57'!
 receptiveAccountWithADepositOf: aValue
@@ -281,6 +283,11 @@ receptiveAccountWithADepositOf: aValueForFirstDeposit andAnotherDepositOf: aValu
 	
 	^ account.
 	! !
+
+!PortfolioTest methodsFor: 'receptive accounts' stamp: 'TO 5/22/2022 12:04:12'!
+receptiveAccountWithDepositsOf50And100
+
+	^ self receptiveAccountWithADepositOf: 50 andAnotherDepositOf: 100! !
 
 !PortfolioTest methodsFor: 'receptive accounts' stamp: 'LZ 5/21/2022 20:31:01'!
 registerDepositOf: aValueForDeposit on: aReceptiveAccount
@@ -307,6 +314,16 @@ portfolioWith: aTransactionRecord with: anotherTransactionRecord
 	portfolio add: anotherTransactionRecord.
 	
 	^ portfolio ! !
+
+!PortfolioTest methodsFor: 'portfolios' stamp: 'TO 5/22/2022 12:02:09'!
+portfolioWithAccountWithADepositOf50AndAnotherAccountWithADepositOf100
+
+	^ self portfolioWithOneAccountWithADepositOf: 50 andAnotherWithADepositOf: 100! !
+
+!PortfolioTest methodsFor: 'portfolios' stamp: 'TO 5/22/2022 11:58:26'!
+portfolioWithOneAccountWithADepositOf50
+
+	^ self portfolioWithOneAccountWithADepositOf: 50! !
 
 !PortfolioTest methodsFor: 'portfolios' stamp: 'LZ 5/21/2022 20:32:57'!
 portfolioWithOneAccountWithADepositOf: aValue
@@ -546,8 +563,10 @@ includes: aTransactionRecord
 	self subclassResponsibility.! !
 
 
-!TransactionRecord methodsFor: 'tree hierarchy' stamp: 'LZ 5/21/2022 18:38:54'!
-addParent: aTransactionRecord! !
+!TransactionRecord methodsFor: 'tree hierarchy' stamp: 'TO 5/22/2022 12:13:12'!
+addParent: aTransactionRecord
+
+	self subclassResponsibility! !
 
 
 !classDefinition: #Portfolio category: 'Portfolio-Ejercicio'!
@@ -695,6 +714,12 @@ hasRegistered: aTransaction
 
 	^ self transactions includes: aTransaction 
 ! !
+
+
+!ReceptiveAccount methodsFor: 'tree hierarchy' stamp: 'TO 5/22/2022 12:13:44'!
+addParent: aTransactionRecord
+
+	^ self! !
 
 
 !ReceptiveAccount methodsFor: 'testing-private' stamp: 'LZ 5/21/2022 19:49:22'!
