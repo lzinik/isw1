@@ -1,88 +1,3 @@
-!classDefinition: #AccountTransferTest category: 'Portfolio2-Ejercicio'!
-TestCase subclass: #AccountTransferTest
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Portfolio2-Ejercicio'!
-
-!AccountTransferTest methodsFor: 'tests' stamp: 'LZ 5/23/2022 21:31:23'!
-test01ShouldRaiseErrorWhenTransferingANegativeValue
-
-	| account1 account2 |
-	
-	account1 := ReceptiveAccount new.
-	account2 := ReceptiveAccount new.
-	
-	self 
-		should: [ account1 transfer: -5 to: account2 ]
-		raise: Error
-		withExceptionDo: [ :anError |
-			self assert: account1 transferValueShouldBePositive equals: anError messageText.
-			self assert: account1 balance equals: 0.
-			self assert: account2 balance equals: 0. ]
-	
-	! !
-
-!AccountTransferTest methodsFor: 'tests' stamp: 'LZ 5/23/2022 21:36:58'!
-test02ShouldRaiseErrorWhenTransferingZero
-
-	| account1 account2 |
-	
-	account1 := ReceptiveAccount new.
-	account2 := ReceptiveAccount new.
-	
-	self 
-		should: [ account1 transfer: 0 to: account2 ]
-		raise: Error
-		withExceptionDo: [ :anError |
-			self assert: account1 transferValueShouldBePositive equals: anError messageText.
-			self assert: account1 balance equals: 0.
-			self assert: account2 balance equals: 0. ]
-	
-	! !
-
-!AccountTransferTest methodsFor: 'tests' stamp: 'LZ 5/23/2022 21:37:04'!
-test03ShouldRaiseErrorWhenTransferingFromAnAccountToTheSameAccount
-
-	| account |
-	
-	account := ReceptiveAccount new.
-	
-	self 
-		should: [ account transfer: 10 to: account ]
-		raise: Error
-		withExceptionDo: [ :anError |
-			self assert: account canNotTransferToTheSameAccount equals: anError messageText.
-			self assert: account balance equals: 0 ]
-	
-	! !
-
-!AccountTransferTest methodsFor: 'tests' stamp: 'LZ 5/23/2022 21:37:09'!
-test04TransferFromOneAccountToAnotherAffectBalancesCorrectly
-
-	| account1 account2 |
-	
-	account1 := ReceptiveAccount new.
-	account2 := ReceptiveAccount new.
-	
-	account1 transfer: 10 to: account2.
-	
-	self assert: account1 balance equals: -10.
-	self assert: account2 balance equals: 10.! !
-
-!AccountTransferTest methodsFor: 'tests' stamp: 'LZ 5/23/2022 21:53:08'!
-test05
-
-	| account1 account2 |
-	
-	account1 := ReceptiveAccount new.
-	account2 := ReceptiveAccount new.
-	
-	account1 transfer: 10 to: account2.
-	
-	self assert: account1 transactions first receiverAccount equals: account2.! !
-
-
 !classDefinition: #PortfolioTest category: 'Portfolio2-Ejercicio'!
 TestCase subclass: #PortfolioTest
 	instanceVariableNames: ''
@@ -390,6 +305,92 @@ test07AccountKnowsItsTransactions
 ! !
 
 
+!classDefinition: #TransferTest category: 'Portfolio2-Ejercicio'!
+TestCase subclass: #TransferTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio2-Ejercicio'!
+
+!TransferTest methodsFor: 'tests' stamp: 'LZ 5/23/2022 21:31:23'!
+test01ShouldRaiseErrorWhenTransferingANegativeValue
+
+	| account1 account2 |
+	
+	account1 := ReceptiveAccount new.
+	account2 := ReceptiveAccount new.
+	
+	self 
+		should: [ account1 transfer: -5 to: account2 ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: account1 transferValueShouldBePositive equals: anError messageText.
+			self assert: account1 balance equals: 0.
+			self assert: account2 balance equals: 0. ]
+	
+	! !
+
+!TransferTest methodsFor: 'tests' stamp: 'LZ 5/23/2022 21:36:58'!
+test02ShouldRaiseErrorWhenTransferingZero
+
+	| account1 account2 |
+	
+	account1 := ReceptiveAccount new.
+	account2 := ReceptiveAccount new.
+	
+	self 
+		should: [ account1 transfer: 0 to: account2 ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: account1 transferValueShouldBePositive equals: anError messageText.
+			self assert: account1 balance equals: 0.
+			self assert: account2 balance equals: 0. ]
+	
+	! !
+
+!TransferTest methodsFor: 'tests' stamp: 'LZ 5/23/2022 21:37:04'!
+test03ShouldRaiseErrorWhenTransferingFromAnAccountToTheSameAccount
+
+	| account |
+	
+	account := ReceptiveAccount new.
+	
+	self 
+		should: [ account transfer: 10 to: account ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: account canNotTransferToTheSameAccount equals: anError messageText.
+			self assert: account balance equals: 0 ]
+	
+	! !
+
+!TransferTest methodsFor: 'tests' stamp: 'LZ 5/23/2022 21:37:09'!
+test04TransferFromOneAccountToAnotherAffectBalancesCorrectly
+
+	| account1 account2 |
+	
+	account1 := ReceptiveAccount new.
+	account2 := ReceptiveAccount new.
+	
+	account1 transfer: 10 to: account2.
+	
+	self assert: account1 balance equals: -10.
+	self assert: account2 balance equals: 10.! !
+
+!TransferTest methodsFor: 'tests' stamp: 'TO 5/26/2022 20:27:47'!
+test05
+
+	| account1 account2 transfer |
+	
+	account1 := ReceptiveAccount new.
+	account2 := ReceptiveAccount new.
+	
+	transfer := account1 transfer: 10 to: account2.
+	
+	self assert: (account1 hasRegistered: transfer depositLeg).
+	self assert: (account2 hasRegistered: transfer withdrawLeg).! !
+
+
 !classDefinition: #Account category: 'Portfolio2-Ejercicio'!
 Object subclass: #Account
 	instanceVariableNames: ''
@@ -599,15 +600,10 @@ transactions
 
 	^ transactions copy! !
 
-!ReceptiveAccount methodsFor: 'transactions' stamp: 'LZ 5/23/2022 21:38:15'!
+!ReceptiveAccount methodsFor: 'transactions' stamp: 'TO 5/26/2022 20:31:49'!
 transfer: anAmountOfMoney to: anotherReceptiveAccount 
 
-	anotherReceptiveAccount = self ifTrue:[ self error: self canNotTransferToTheSameAccount ].
-	anAmountOfMoney <= 0  ifTrue:[ self error: self transferValueShouldBePositive ].
-
-	
-	Deposit register: anAmountOfMoney on: anotherReceptiveAccount .
-	Withdraw register: anAmountOfMoney on: self.! !
+	^ Transfer for: anAmountOfMoney from: self to: anotherReceptiveAccount.! !
 
 
 !ReceptiveAccount methodsFor: 'balance' stamp: 'HAW 5/25/2019 11:24:46'!
@@ -634,17 +630,6 @@ isComposedBy: anAccount
 addedTo: aPortfolio 
 	
 	! !
-
-
-!ReceptiveAccount methodsFor: 'error descriptions' stamp: 'LZ 5/23/2022 21:23:59'!
-canNotTransferToTheSameAccount
-
-	^ 'Can not transfer to the same account'.! !
-
-!ReceptiveAccount methodsFor: 'error descriptions' stamp: 'LZ 5/23/2022 21:35:48'!
-transferValueShouldBePositive
-	
-	 ^ 'Transfer value should be positive'.! !
 
 
 !classDefinition: #AccountTransaction category: 'Portfolio2-Ejercicio'!
@@ -752,3 +737,44 @@ Withdraw class
 for: aValue
 
 	^ self new initializeFor: aValue ! !
+
+
+!classDefinition: #Transfer category: 'Portfolio2-Ejercicio'!
+Object subclass: #Transfer
+	instanceVariableNames: 'value senderReceptiveAccount receiverReceptiveAccount'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio2-Ejercicio'!
+
+!Transfer methodsFor: 'error descriptions' stamp: 'TO 5/26/2022 20:34:55'!
+canNotTransferToTheSameAccount
+
+	^ 'Can not transfer to the same account'.! !
+
+!Transfer methodsFor: 'error descriptions' stamp: 'TO 5/26/2022 20:35:11'!
+transferValueShouldBePositive
+	
+	 ^ 'Transfer value should be positive'.! !
+
+
+!Transfer methodsFor: 'initialize' stamp: 'TO 5/26/2022 20:34:08'!
+initializeFor: anAmountOfMoney from: aSenderReceptiveAccount to: aReceiverReceptiveAccount
+
+	value := anAmountOfMoney.
+	
+	aSenderReceptiveAccount = aReceiverReceptiveAccount ifTrue:[ self error: self canNotTransferToTheSameAccount ].
+	anAmountOfMoney <= 0  ifTrue:[ self error: self transferValueShouldBePositive ].
+	
+	Deposit register: anAmountOfMoney on: aReceiverReceptiveAccount.
+	Withdraw register: anAmountOfMoney on: aSenderReceptiveAccount.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Transfer class' category: 'Portfolio2-Ejercicio'!
+Transfer class
+	instanceVariableNames: ''!
+
+!Transfer class methodsFor: 'instance creation' stamp: 'TO 5/26/2022 20:32:51'!
+for: anAmountOfMoney from: aSenderReceptiveAccount to: aReceiverReceptiveAccount
+
+	^ self new initializeFor: anAmountOfMoney from: aSenderReceptiveAccount to: aReceiverReceptiveAccount ! !
