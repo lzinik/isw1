@@ -5,88 +5,86 @@ TestCase subclass: #AccountSummaryTest
 	poolDictionaries: ''
 	category: 'Portfolio2-Ejercicio'!
 
-!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/28/2022 11:34:52'!
-test01
+!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:19:12'!
+test01AccountWithNoTransactionsReportsOnlyEmptyBalance
 	
-	| summary |
-	summary := ReceptiveAccount new accountSummary.
-	
-	self assert: summary equals: 'Balance = 0'.! !
+	self assertSummaryFor: ReceptiveAccount new equals: #('Balance = 0')! !
 
-!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/28/2022 11:37:57'!
-test02
+!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:21:37'!
+test02AccountSummaryShouldReportDepositCorrectly
 	
-	| summaryLines account |
+	| account |
 	account := ReceptiveAccount new.
 	Deposit register: 10 on: account.
 	
-	summaryLines := account accountSummary lines.
-	
-	self assert: summaryLines first equals: 'Depósito por 10.'.
-	self assert: summaryLines second equals: 'Balance = 10'.! !
+	self assertSummaryFor: account equals: #(
+		'Depósito por 10.'
+		'Balance = 10'
+	)! !
 
-!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/28/2022 11:42:39'!
-test03
+!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:39:56'!
+test03AccountSummaryShouldReportWithdrawCorrectly
 	
-	| summaryLines account |
+	| account |
 	account := ReceptiveAccount new.
 	Withdraw register: 10 on: account.
 	
-	summaryLines := account accountSummary lines.
-	
-	self assert: summaryLines first equals: 'Extracción por 10.'.
-	self assert: summaryLines second equals: 'Balance = -10'.! !
+	self assertSummaryFor: account equals: #(
+	 	'Extracción por 10.'
+	 	'Balance = -10'
+	)! !
 
-!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/28/2022 11:46:29'!
-test04
+!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:22:06'!
+test04AccountSummaryShouldReportTransferWithdrawLegCorrectly
 	
-	| summaryLines account |
+	| account |
 	account := ReceptiveAccount new.
 	Transfer for: 10 from: account to: ReceptiveAccount new.
-	summaryLines := account accountSummary lines.
 	
-	self assert: summaryLines first equals: 'Salida por transferencia de 10.'.
-	self assert: summaryLines second equals: 'Balance = -10'.! !
+	self assertSummaryFor: account equals: #(
+		'Salida por transferencia de 10.'
+		'Balance = -10'
+	)! !
 
-!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/28/2022 11:50:15'!
-test05
+!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:22:41'!
+test05AccountSummaryShouldReportTransferDepositLegCorrectly
 	
-	| summaryLines account |
+	| account |
 	account := ReceptiveAccount new.
 	Transfer for: 10 from: ReceptiveAccount new to: account.
-	summaryLines := account accountSummary lines.
 	
-	self assert: summaryLines first equals: 'Entrada por transferencia de 10.'.
-	self assert: summaryLines second equals: 'Balance = 10'.! !
+	self assertSummaryFor: account equals: #(
+		'Entrada por transferencia de 10.'
+		'Balance = 10'
+	)! !
 
-!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/28/2022 11:55:18'!
-test06
+!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:23:29'!
+test06AccountSummaryShouldReportAllTransactionsAndBalance
 	
-	| summaryLines account |
+	| account |
 	account := ReceptiveAccount new.
 	Deposit register: 100 on: account.
 	Withdraw register: 50 on: account.
 	Transfer for: 20 from: account to: ReceptiveAccount new.
 	Transfer for: 30 from: ReceptiveAccount new to: account.
 	
-	summaryLines := account accountSummary lines.
-	
-	self assert: summaryLines first equals: 'Depósito por 100.'.
-	self assert: summaryLines second equals: 'Extracción por 50.'.
-	self assert: summaryLines third equals: 'Salida por transferencia de 20.'.
-	self assert: summaryLines fourth equals: 'Entrada por transferencia de 30.'.
-	self assert: summaryLines fifth equals: 'Balance = 60'.! !
+	self assertSummaryFor: account equals: #(
+		'Depósito por 100.'
+		'Extracción por 50.'
+		'Salida por transferencia de 20.'
+		'Entrada por transferencia de 30.'
+		'Balance = 60'
+	)! !
 
-!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/28/2022 12:47:07'!
-test07
+!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:24:10'!
+test07PortfolioWithNoTransactionsReportsOnlyEmptyBalance
 	
-	| portfolio |
-	portfolio := Portfolio new.
-	
-	self assert: portfolio accountSummary equals: 'Balance = 0'.! !
+	self assertSummaryFor: Portfolio new equals: #(
+		'Balance = 0'
+	)! !
 
-!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/28/2022 12:55:51'!
-test08
+!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:29:15'!
+test08PortfolioSummaryWithOneAccountShouldMatchSummaryOfAccount
 	
 	| portfolio account |
 	portfolio := Portfolio new.
@@ -97,12 +95,12 @@ test08
 	Transfer for: 20 from: account to: ReceptiveAccount new.
 	Transfer for: 30 from: ReceptiveAccount new to: account.
 	
-	self assert: portfolio accountSummary equals: account accountSummary.! !
+	self assertSummaryFor: portfolio equals: (self accountSummaryLinesFor: account)! !
 
-!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/28/2022 14:13:34'!
-test09
+!AccountSummaryTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:26:19'!
+test09PortfolioSummaryShouldReportAllTransactionsInTree
 	
-	| mainPortfolio secondaryPortfolio mainPortfolioAccount secondaryPortfolioAccount summaryLines |
+	| mainPortfolio secondaryPortfolio mainPortfolioAccount secondaryPortfolioAccount |
 	mainPortfolio := Portfolio new.
 	mainPortfolioAccount := ReceptiveAccount new.
 	mainPortfolio add: mainPortfolioAccount.
@@ -117,15 +115,31 @@ test09
 	Transfer for: 20 from: ReceptiveAccount new to: secondaryPortfolioAccount.
 	Withdraw register: 10 on: secondaryPortfolioAccount.
 	
-	summaryLines := mainPortfolio accountSummary lines.
+	self assertSummaryFor: mainPortfolio equals: #(
+		 'Depósito por 100.'
+		 'Salida por transferencia de 20.'
+		 'Entrada por transferencia de 20.'
+		 'Entrada por transferencia de 20.'
+		 'Extracción por 10.'
+		 'Balance = 110'
+	)! !
+
+
+!AccountSummaryTest methodsFor: 'assertions' stamp: 'TO 5/29/2022 12:29:02'!
+assertSummaryFor: anAccount equals: aReportLines
 	
-	self assert: summaryLines first equals: 'Depósito por 100.'.
-	self assert: summaryLines second equals: 'Salida por transferencia de 20.'.
-	self assert: summaryLines third equals: 'Entrada por transferencia de 20.'.
-	self assert: summaryLines fourth equals: 'Entrada por transferencia de 20.'.
-	self assert: summaryLines fifth equals: 'Extracción por 10.'.
-	self assert: summaryLines sixth equals: 'Balance = 110'.
-	! !
+	self assert: (self accountSummaryLinesFor: anAccount) equals: aReportLines! !
+
+
+!AccountSummaryTest methodsFor: 'report' stamp: 'TO 5/29/2022 12:12:34'!
+accountSummaryFor: anAccount
+
+	^ (AccountSummary for: anAccount) report! !
+
+!AccountSummaryTest methodsFor: 'report' stamp: 'TO 5/29/2022 12:28:50'!
+accountSummaryLinesFor: anAccount
+
+	^ (self accountSummaryFor: anAccount) lines! !
 
 
 !classDefinition: #PortfolioTest category: 'Portfolio2-Ejercicio'!
@@ -442,56 +456,51 @@ TestCase subclass: #TransferNetTest
 	poolDictionaries: ''
 	category: 'Portfolio2-Ejercicio'!
 
-!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/28/2022 12:18:54'!
-test01
+!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:36:46'!
+test01TransferNetForNewAccountShouldBeZero
 	
-	| transferNet |
-	transferNet := ReceptiveAccount new transferNet.
-	
-	self assert: transferNet equals: 0.! !
+	self assertTransferNetOf: ReceptiveAccount new equals: 0.! !
 
-!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/28/2022 12:22:27'!
-test02
+!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:36:29'!
+test02TransferNetShouldBeAffectedAfterATransferWhenAccountIsSender
 	
-	| transferNet account |
+	| account |
 	account := ReceptiveAccount new.
 	Transfer for: 10 from: account to: ReceptiveAccount new.
 	
-	transferNet :=  account transferNet.
-	
-	self assert: transferNet equals: -10.! !
+	self assertTransferNetOf: account equals: -10.! !
 
-!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/28/2022 12:25:55'!
-test03
+!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:37:05'!
+test03TransferNetShouldBeAffectedAfertATransferWhenAccountIsReceiver
 	
 	| account |
 	account := ReceptiveAccount new.
 	Transfer for: 10 from: ReceptiveAccount new to: account.
 	
-	self assert: account transferNet equals: 10.! !
+	self assertTransferNetOf: account equals: 10.! !
 
-!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/28/2022 12:30:42'!
-test04
+!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:37:14'!
+test04TransferNetShouldNotBeAffectedByDeposit
 	
 	| account |
 	account := ReceptiveAccount new.
 	Transfer for: 10 from: ReceptiveAccount new to: account.
 	Deposit register: 10 on: account.
 	
-	self assert: account transferNet equals: 10.! !
+	self assertTransferNetOf: account equals: 10.! !
 
-!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/28/2022 12:33:41'!
-test05
+!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:37:23'!
+test05TransferNetShouldNotBeAffectedByWithdraw
 	
 	| account |
 	account := ReceptiveAccount new.
 	Transfer for: 10 from: ReceptiveAccount new to: account.
 	Withdraw register: 10 on: account.
 	
-	self assert: account transferNet equals: 10.! !
+	self assertTransferNetOf: account equals: 10.! !
 
-!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/28/2022 12:36:22'!
-test06
+!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:37:32'!
+test06ShouldReportTransferNetCorrectlyAfterMultipleTransactions
 	
 	| account |
 	account := ReceptiveAccount new.
@@ -501,15 +510,15 @@ test06
 	Withdraw register: 30 on: account.
 	Transfer for: 15 from: ReceptiveAccount new to: account.
 	
-	self assert: account transferNet equals: 25.! !
+	self assertTransferNetOf: account equals: 25.! !
 
-!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/28/2022 14:14:38'!
-test07
+!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:37:47'!
+test07TransferNetForNewPortfolioShouldBeZero
 	
-	self assert: Portfolio new transferNet equals: 0.! !
+	self assertTransferNetOf: Portfolio new equals: 0.! !
 
-!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/28/2022 14:17:09'!
-test08	
+!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:38:20'!
+test08TransferNetOfPortfolioWithOneAccountShouldMatchAccountTransferNet	
 	
 	| portfolio account |	
 	account := ReceptiveAccount new.
@@ -519,10 +528,10 @@ test08
 	portfolio := Portfolio new.
 	portfolio add: account.
 
-	self assert: portfolio transferNet equals: account transferNet.! !
+	self assertTransferNetOf: portfolio equals: (self transferNetOf: account).! !
 
-!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/28/2022 14:20:39'!
-test09
+!TransferNetTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:38:47'!
+test09TransferNetOfPortfolioShouldBeAffectedByAllInnerTransfers
 	
 	| mainPortfolio mainPortfolioAccount secondaryPortfolio secondaryPortfolioAccount |	
 	secondaryPortfolioAccount := ReceptiveAccount new.
@@ -539,7 +548,19 @@ test09
 	mainPortfolio add: mainPortfolioAccount.
 	mainPortfolio add: secondaryPortfolio.
 
-	self assert: mainPortfolio transferNet equals: mainPortfolioAccount transferNet + secondaryPortfolio transferNet.! !
+	self assertTransferNetOf: mainPortfolio equals: (self transferNetOf: mainPortfolioAccount) + (self transferNetOf: secondaryPortfolio)! !
+
+
+!TransferNetTest methodsFor: 'assertions' stamp: 'TO 5/29/2022 12:36:20'!
+assertTransferNetOf: anAccount equals: anAmount 
+
+	^ self assert: (self transferNetOf: anAccount) equals: anAmount! !
+
+
+!TransferNetTest methodsFor: 'report' stamp: 'TO 5/29/2022 12:30:17'!
+transferNetOf: account
+
+	^ (TransferNet for: account) report! !
 
 
 !classDefinition: #TransferTest category: 'Portfolio2-Ejercicio'!
@@ -591,40 +612,40 @@ test03ShouldRaiseErrorWhenTransferingFromAnAccountToTheSameAccount
 	self shouldRaiseWhenTransferingWithoutAffectingBalances: 10 toSameAccountAsSender: ReceptiveAccount new.
 	! !
 
-!TransferTest methodsFor: 'tests' stamp: 'TO 5/28/2022 10:52:40'!
+!TransferTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:07:22'!
 test04TransferFromOneAccountToAnotherAffectBalancesCorrectly
 
-	| account1 account2 |
+	| senderAccount receiverAccount |
 	
-	account1 := ReceptiveAccount new.
-	account2 := ReceptiveAccount new.
+	senderAccount := ReceptiveAccount new.
+	receiverAccount := ReceptiveAccount new.
 	
-	Transfer for: 10 from: account1 to: account2.
+	Transfer for: 10 from: senderAccount to: receiverAccount.
 	
-	self assert: account1 balance equals: -10.
-	self assert: account2 balance equals: 10.! !
+	self assert: senderAccount balance equals: -10.
+	self assert: receiverAccount balance equals: 10.! !
 
-!TransferTest methodsFor: 'tests' stamp: 'TO 5/28/2022 14:40:58'!
+!TransferTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:07:44'!
 test05ReceiverAccountHasRegisteredTransferDepositLeg
 
-	| account1 account2 transfer |
-	account1 := ReceptiveAccount new.
-	account2 := ReceptiveAccount new.
+	| senderAccount receiverAccount transfer |
+	senderAccount := ReceptiveAccount new.
+	receiverAccount := ReceptiveAccount new.
 	
-	transfer := Transfer for: 10 from: account1 to: account2.
+	transfer := Transfer for: 10 from: senderAccount to: receiverAccount.
 	
-	self assert: (account2 hasRegistered: transfer depositLeg).! !
+	self assert: (receiverAccount hasRegistered: transfer depositLeg).! !
 
-!TransferTest methodsFor: 'tests' stamp: 'TO 5/28/2022 14:41:09'!
+!TransferTest methodsFor: 'tests' stamp: 'TO 5/29/2022 12:08:21'!
 test06SenderAccountHasRegisteredTransferWithdrawLeg
 
-	| account1 account2 transfer |
-	account1 := ReceptiveAccount new.
-	account2 := ReceptiveAccount new.
+	| senderAccount receiverAccount transfer |
+	senderAccount := ReceptiveAccount new.
+	receiverAccount := ReceptiveAccount new.
 	
-	transfer := Transfer for: 10 from: account1 to: account2.
+	transfer := Transfer for: 10 from: senderAccount to: receiverAccount.
 	
-	self assert: (account1 hasRegistered: transfer withdrawLeg).! !
+	self assert: (senderAccount hasRegistered: transfer withdrawLeg).! !
 
 !TransferTest methodsFor: 'tests' stamp: 'TO 5/28/2022 14:41:21'!
 test07TransferDepositLegKnowsOriginalTransfer
@@ -684,6 +705,12 @@ transactions
 
 !Account methodsFor: 'composition' stamp: 'HAW 5/25/2019 12:24:04'!
 addedTo: aPortfolio
+
+	self subclassResponsibility ! !
+
+
+!Account methodsFor: 'reports' stamp: 'TO 5/29/2022 11:34:49'!
+reportOn: aReport
 
 	self subclassResponsibility ! !
 
@@ -800,21 +827,10 @@ signalCanNotAddAccount
 	self error: self class canNotAddAccountErrorMessage! !
 
 
-!Portfolio methodsFor: 'reports' stamp: 'TO 5/28/2022 14:12:29'!
-accountSummary
+!Portfolio methodsFor: 'reports' stamp: 'TO 5/29/2022 11:34:28'!
+reportOn: aReport
 	
-	^ self transactionsSummary, 'Balance = ' , self balance asString.
-	! !
-
-!Portfolio methodsFor: 'reports' stamp: 'TO 5/28/2022 14:12:39'!
-transactionsSummary
-	
-	^ accounts inject: '' into: [: summary :anAccount | summary, anAccount transactionsSummary ]! !
-
-!Portfolio methodsFor: 'reports' stamp: 'TO 5/28/2022 14:21:37'!
-transferNet
-	
-	^ accounts sum: [ : anAccount |anAccount transferNet ] ifEmpty: [ 0 ].! !
+	accounts do: [: anAccount | anAccount reportOn: aReport ]! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -900,20 +916,10 @@ addedTo: aPortfolio
 	! !
 
 
-!ReceptiveAccount methodsFor: 'reports' stamp: 'TO 5/28/2022 14:11:17'!
-accountSummary
-
-	^ self transactionsSummary, 'Balance = ' , self balance asString.! !
-
-!ReceptiveAccount methodsFor: 'reports' stamp: 'TO 5/28/2022 14:10:43'!
-transactionsSummary
-
-	^ transactions inject: '' into: [: summary :aTransaction | summary, aTransaction lineForAccountSummary, Character newLineCharacter asString.]! !
-
-!ReceptiveAccount methodsFor: 'reports' stamp: 'TO 5/28/2022 12:39:02'!
-transferNet
+!ReceptiveAccount methodsFor: 'reports' stamp: 'TO 5/29/2022 11:33:58'!
+reportOn: aReport 
 	
-	^ transactions sum: [ : aTransaction |aTransaction valueForTransferNet ] ifEmpty: [ 0 ].! !
+	transactions do: [ : aTransaction | aTransaction reportOn: aReport ].! !
 
 
 !classDefinition: #AccountTransaction category: 'Portfolio2-Ejercicio'!
@@ -935,13 +941,8 @@ affectBalance: aBalance
 	self subclassResponsibility ! !
 
 
-!AccountTransaction methodsFor: 'report' stamp: 'TO 5/28/2022 12:08:10'!
-lineForAccountSummary
-	
-	self subclassResponsibility ! !
-
-!AccountTransaction methodsFor: 'report' stamp: 'TO 5/28/2022 12:37:33'!
-valueForTransferNet
+!AccountTransaction methodsFor: 'report' stamp: 'TO 5/29/2022 11:35:44'!
+reportOn: aReport
 	
 	self subclassResponsibility ! !
 
@@ -987,15 +988,10 @@ affectBalance: aBalance
 	^aBalance + value ! !
 
 
-!Deposit methodsFor: 'report' stamp: 'TO 5/28/2022 12:12:33'!
-lineForAccountSummary
-
-	^ 'Depósito por ', value asString, '.'! !
-
-!Deposit methodsFor: 'report' stamp: 'TO 5/28/2022 12:39:20'!
-valueForTransferNet
+!Deposit methodsFor: 'report' stamp: 'TO 5/29/2022 11:36:09'!
+reportOn: aReport 
 	
-	^ 0! !
+	aReport reportDeposit: self! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1047,15 +1043,10 @@ value
 	^ transfer value! !
 
 
-!TransferDepositLeg methodsFor: 'report' stamp: 'TO 5/28/2022 12:14:00'!
-lineForAccountSummary
-
-	^ 'Entrada por transferencia de ', self value asString, '.'! !
-
-!TransferDepositLeg methodsFor: 'report' stamp: 'TO 5/28/2022 12:39:48'!
-valueForTransferNet
-
-	^ self value! !
+!TransferDepositLeg methodsFor: 'report' stamp: 'TO 5/29/2022 11:36:37'!
+reportOn: aReport 
+	
+	aReport reportTransferDepositLeg: self! !
 
 
 !TransferDepositLeg methodsFor: 'accessing' stamp: 'TO 5/28/2022 11:12:46'!
@@ -1101,15 +1092,10 @@ value
 	^ transfer value! !
 
 
-!TransferWithdrawLeg methodsFor: 'report' stamp: 'TO 5/28/2022 12:13:40'!
-lineForAccountSummary
-
-	^ 'Salida por transferencia de ', self value asString, '.'! !
-
-!TransferWithdrawLeg methodsFor: 'report' stamp: 'TO 5/28/2022 12:40:11'!
-valueForTransferNet
-
-	^ self value negated ! !
+!TransferWithdrawLeg methodsFor: 'report' stamp: 'TO 5/29/2022 11:36:58'!
+reportOn: aReport 
+	
+	aReport reportTransferWithdrawLeg: self! !
 
 
 !TransferWithdrawLeg methodsFor: 'accessing' stamp: 'TO 5/28/2022 11:17:16'!
@@ -1148,15 +1134,10 @@ value
 	^ value! !
 
 
-!Withdraw methodsFor: 'report' stamp: 'TO 5/28/2022 12:12:12'!
-lineForAccountSummary
-
-	^ 'Extracción por ', value asString, '.'! !
-
-!Withdraw methodsFor: 'report' stamp: 'TO 5/28/2022 12:39:36'!
-valueForTransferNet
-
-	^ 0! !
+!Withdraw methodsFor: 'report' stamp: 'TO 5/29/2022 11:37:20'!
+reportOn: aReport 
+	
+	aReport reportWithdraw: self! !
 
 
 !Withdraw methodsFor: 'balance' stamp: 'HAW 5/25/2019 11:25:15'!
@@ -1174,6 +1155,169 @@ Withdraw class
 for: aValue
 
 	^ self new initializeFor: aValue ! !
+
+
+!classDefinition: #Report category: 'Portfolio2-Ejercicio'!
+Object subclass: #Report
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio2-Ejercicio'!
+
+!Report methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:32:11'!
+reportDeposit: aDeposit
+
+	self subclassResponsibility ! !
+
+!Report methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:32:38'!
+reportTransferDepositLeg: aTransferDepositLeg
+
+	self subclassResponsibility ! !
+
+!Report methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:32:51'!
+reportTransferWithdrawLeg: aTransferWithdrawLeg
+
+	self subclassResponsibility ! !
+
+!Report methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:32:21'!
+reportWithdraw: aWithdraw
+
+	self subclassResponsibility ! !
+
+
+!Report methodsFor: 'report' stamp: 'TO 5/29/2022 11:31:25'!
+report
+
+	self subclassResponsibility! !
+
+
+!classDefinition: #AccountSummary category: 'Portfolio2-Ejercicio'!
+Report subclass: #AccountSummary
+	instanceVariableNames: 'account report'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio2-Ejercicio'!
+
+!AccountSummary methodsFor: 'initialize' stamp: 'TO 5/29/2022 10:52:39'!
+initializeFor: anAccount 
+
+	account := anAccount.! !
+
+
+!AccountSummary methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:41:55'!
+addLine: aLine
+	
+	report := report, aLine, self newLine! !
+
+!AccountSummary methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:09:44'!
+newLine
+
+	^ Character newLineCharacter asString! !
+
+!AccountSummary methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:44:50'!
+reportDeposit: aDeposit
+	
+	self addLine: 'Depósito por ', (self transactionValueForSummary: aDeposit), '.'! !
+
+!AccountSummary methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:45:07'!
+reportTransferDepositLeg: aTransferDepositLeg 
+	
+	self addLine: 'Entrada por transferencia de ', (self transactionValueForSummary: aTransferDepositLeg), '.'! !
+
+!AccountSummary methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:45:16'!
+reportTransferWithdrawLeg: aTransferWithdrawLeg 
+	
+	self addLine: 'Salida por transferencia de ', (self transactionValueForSummary: aTransferWithdrawLeg), '.'! !
+
+!AccountSummary methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:45:41'!
+reportWithdraw: aWithdraw
+
+	self addLine: 'Extracción por ', (self transactionValueForSummary: aWithdraw), '.'! !
+
+!AccountSummary methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:44:50'!
+transactionValueForSummary: aDeposit
+
+	^ aDeposit value asString! !
+
+
+!AccountSummary methodsFor: 'report' stamp: 'TO 5/29/2022 11:43:40'!
+addBalanceToReport
+
+	report := report, 'Balance = ' , account balance asString! !
+
+!AccountSummary methodsFor: 'report' stamp: 'TO 5/29/2022 11:43:25'!
+report
+	
+	report := ''.
+	account reportOn: self.
+	
+	self addBalanceToReport.
+	
+	^ report! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'AccountSummary class' category: 'Portfolio2-Ejercicio'!
+AccountSummary class
+	instanceVariableNames: ''!
+
+!AccountSummary class methodsFor: 'instance creation' stamp: 'TO 5/29/2022 10:52:24'!
+for: anAccount 
+	
+	^ self new initializeFor: anAccount ! !
+
+
+!classDefinition: #TransferNet category: 'Portfolio2-Ejercicio'!
+Report subclass: #TransferNet
+	instanceVariableNames: 'account transferNet'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Portfolio2-Ejercicio'!
+
+!TransferNet methodsFor: 'initialize' stamp: 'TO 5/29/2022 11:19:58'!
+initializeFor: anAccount 
+
+	account := anAccount.! !
+
+
+!TransferNet methodsFor: 'report' stamp: 'TO 5/29/2022 11:37:56'!
+report
+	
+	transferNet := 0.
+	account reportOn: self.
+	
+	^ transferNet ! !
+
+
+!TransferNet methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:28:42'!
+reportDeposit: aDeposit 
+	
+	! !
+
+!TransferNet methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:28:04'!
+reportTransferDepositLeg: aTransferDepositLeg 
+	
+	transferNet := transferNet + aTransferDepositLeg value! !
+
+!TransferNet methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:27:12'!
+reportTransferWithdrawLeg: aTransferWithdrawLeg 
+	
+	transferNet := transferNet - aTransferWithdrawLeg value! !
+
+!TransferNet methodsFor: 'report - private' stamp: 'TO 5/29/2022 11:29:11'!
+reportWithdraw: aWithdraw 
+	! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferNet class' category: 'Portfolio2-Ejercicio'!
+TransferNet class
+	instanceVariableNames: ''!
+
+!TransferNet class methodsFor: 'instance creation' stamp: 'TO 5/29/2022 11:19:43'!
+for: anAccount
+
+	^ self new initializeFor: anAccount ! !
 
 
 !classDefinition: #Transfer category: 'Portfolio2-Ejercicio'!
