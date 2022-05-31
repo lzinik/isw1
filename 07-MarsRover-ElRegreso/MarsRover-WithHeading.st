@@ -5,214 +5,202 @@ TestCase subclass: #MarsRoverFollowerTest
 	poolDictionaries: ''
 	category: 'MarsRover-WithHeading'!
 
-!MarsRoverFollowerTest methodsFor: 'assertions' stamp: 'TO 5/31/2022 18:30:42'!
-assertWindow: aWindow positionFieldShows: aValueForPositionField headingFieldShows: aValueForHeadingField  
+!MarsRoverFollowerTest methodsFor: 'assertions' stamp: 'TO 5/31/2022 19:34:58'!
+assertLogger: aMarsRoverLogger onlyHasLines: anArrayOfLines  
 
-	self assert: aValueForPositionField equals: aWindow marsRoverPosition.
-	self assert: aValueForHeadingField equals: aWindow marsRoverHeading! !
+	| loggerStream |
+	
+	loggerStream := aMarsRoverLogger readStream.
+	anArrayOfLines do: [ : aLine | 
+		self deny: loggerStream atEnd.
+		self assert: aLine equals: loggerStream nextLine
+	].
+	self assert: loggerStream atEnd! !
+
+!MarsRoverFollowerTest methodsFor: 'assertions' stamp: 'TO 5/31/2022 19:35:20'!
+assertWindow: aMarsRoverWindow positionFieldShows: aValueForPositionField headingFieldShows: aValueForHeadingField  
+
+	self assert: aValueForPositionField equals: aMarsRoverWindow marsRoverPosition.
+	self assert: aValueForHeadingField equals: aMarsRoverWindow marsRoverHeading! !
 
 
-!MarsRoverFollowerTest methodsFor: 'mars rovers' stamp: 'TO 5/31/2022 18:53:25'!
-send: aSequenceOfCommands toRoverStartingAt: aPosition heading: aHeading whileFollowingHeadingWith: aFollower
+!MarsRoverFollowerTest methodsFor: 'mars rovers' stamp: 'TO 5/31/2022 19:35:44'!
+send: aSequenceOfCommands toRoverStartingAt: aPosition heading: aHeading whileFollowingHeadingWith: aMarsRoverFollower
+	
+	self send: aSequenceOfCommands toRoverStartingAt: aPosition heading: aHeading whileFollowingPositionWith: Set new whileFollowingHeadingWith: (Set with: aMarsRoverFollower)! !
+
+!MarsRoverFollowerTest methodsFor: 'mars rovers' stamp: 'TO 5/31/2022 19:35:52'!
+send: aSequenceOfCommands toRoverStartingAt: aPosition heading: aHeading whileFollowingPositionWith: aMarsRoverFollower
+	
+	self send: aSequenceOfCommands toRoverStartingAt: aPosition heading: aHeading whileFollowingPositionWith: (Set with: aMarsRoverFollower) whileFollowingHeadingWith: Set new! !
+
+!MarsRoverFollowerTest methodsFor: 'mars rovers' stamp: 'TO 5/31/2022 19:29:30'!
+send: aSequenceOfCommands toRoverStartingAt: aPosition heading: aHeading whileFollowingPositionWith: aCollectionOfPositionFollowers whileFollowingHeadingWith: aCollectionOfHeadingFollowers
 	
 	| marsRover |
 	marsRover := MarsRover at: aPosition heading: aHeading.
-	marsRover followHeadingWith: aFollower.
-	
-	marsRover process: aSequenceOfCommands.! !
-
-!MarsRoverFollowerTest methodsFor: 'mars rovers' stamp: 'TO 5/31/2022 18:49:23'!
-send: aSequenceOfCommands toRoverStartingAt: aPosition heading: aHeading whileFollowingPositionWith: aFollower
-	
-	| marsRover |
-	marsRover := MarsRover at: aPosition heading: aHeading.
-	marsRover followPositionsWith: aFollower.
+	aCollectionOfPositionFollowers do: [ :aFollower | marsRover followPositionsWith: aFollower ].
+	aCollectionOfHeadingFollowers do: [ :aFollower | marsRover followHeadingWith: aFollower ].
 	
 	marsRover process: aSequenceOfCommands.! !
 
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:50:33'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:14:35'!
 test01LoggerShouldBeEmptyIfNoCommandsAreProcessed
 
 	| logger |
 	logger := MarsRoverLogger new.
+	
 	self send: '' toRoverStartingAt: 1@1 heading: self north whileFollowingPositionWith: logger.
 	
 	self assert: logger readStream atEnd.! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:51:06'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:36:59'!
 test02LoggerShouldLogPositionWhenMovingNorthFollowingPositions
 
-	| logger loggerStream |
+	| logger |
 	logger := MarsRoverLogger new.
 	
 	self send: 'f' toRoverStartingAt: 1@1 heading: self north whileFollowingPositionWith: logger.
 	
-	loggerStream := logger readStream.
-	self assert: '1@2' equals: loggerStream nextLine.
-	self assert: loggerStream atEnd.! !
+	self assertLogger: logger onlyHasLines: #('1@2')! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:51:39'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:37:34'!
 test03LoggerShouldLogPositionWhenMovingSouthFollowingPositions
 
-	| logger loggerStream |
+	| logger |
 	logger := MarsRoverLogger new.
 
 	self send: 'b' toRoverStartingAt: 1@1 heading: self north whileFollowingPositionWith: logger.
 	
-	loggerStream := logger readStream.
-	self assert: '1@0' equals: loggerStream nextLine.
-	self assert: loggerStream atEnd.! !
+	self assertLogger: logger onlyHasLines: #('1@0')! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:52:18'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:38:21'!
 test04LoggerShouldLogPositionAllChangesWhenMovingInAnyDirectionFollowingPositions
 
-	| logger loggerStream |
+	| logger |
 	logger := MarsRoverLogger new.
 	
 	self send: 'fb' toRoverStartingAt: 1@1 heading: self east whileFollowingPositionWith: logger.
 	
-	loggerStream := logger readStream.
-	self assert: '2@1' equals: loggerStream nextLine.
-	self assert: '1@1' equals: loggerStream nextLine.
-	self assert: loggerStream atEnd.! !
+	self assertLogger: logger onlyHasLines: #(
+		'2@1'
+		'1@1'
+	)! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:54:31'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:39:41'!
 test05LoggerShouldLogHeadingWhenTurningEastFollowingHeadings
 
-	| logger loggerStream |
+	| logger |
 	logger := MarsRoverLogger new.
+	
 	self send: 'r' toRoverStartingAt: 1@1 heading: self north whileFollowingHeadingWith: logger.
 	
-	loggerStream := logger readStream.
-	self assert: logger eastValue equals: loggerStream nextLine.
-	self assert: loggerStream atEnd.! !
+	self assertLogger: logger onlyHasLines: (Array with: logger eastValue)! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:19:38'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:44:02'!
 test06LoggerShouldLogAllPositionsAndHeadingsWhenFollowingBoth
 
-	| marsRover logger loggerStream |
-	marsRover := MarsRover at: 1@1 heading: self north.
+	| logger |
 	logger := MarsRoverLogger new.
-	marsRover followHeadingWith: logger.
-	marsRover followPositionsWith: logger.
 	
-	marsRover process: 'llfrr'.
+	self send: 'llfrr' toRoverStartingAt: 1@1 heading: self north whileFollowingPositionWith: (Set with: logger) whileFollowingHeadingWith: (Set with: logger).
 	
-	loggerStream := logger readStream.
-	self assert: 'West' equals: loggerStream nextLine.
-	self assert: 'South' equals: loggerStream nextLine.
-	self assert: '1@0' equals: loggerStream nextLine.
-	self assert: 'West' equals: loggerStream nextLine.
-	self assert: 'North' equals: loggerStream nextLine.
-	self assert: loggerStream atEnd.! !
+	self assertLogger: logger onlyHasLines: (Array 
+		with: logger westValue 
+		with: logger southValue 
+		with: '1@0' 
+		with: logger westValue 
+		with: logger northValue
+	)! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:30:42'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:16:30'!
 test07WindowFieldsShouldBeEmptyIfNoCommandsAreProcessed
 
-	| marsRover window |
-	marsRover := MarsRover at: 1@1 heading: self north.
+	| window |
 	window := MarsRoverWindow new.
-	marsRover followPositionsWith: window.
 	
-	marsRover process: ''.
+	self send: '' toRoverStartingAt: 1@1 heading: self north whileFollowingPositionWith: window.
 	
 	self assertWindow: window positionFieldShows: '' headingFieldShows: ''.! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:31:19'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:16:49'!
 test08WindowPositionFieldShouldDisplayLastPositionWhenMovingNorthFollowingPositions
 
-	| marsRover window |
-	marsRover := MarsRover at: 1@1 heading: self north.
+	| window |
 	window := MarsRoverWindow new.
-	marsRover followPositionsWith: window.
 	
-	marsRover process: 'f'.
+	self send: 'f' toRoverStartingAt: 1@1 heading: self north whileFollowingPositionWith: window.
 	
 	self assertWindow: window positionFieldShows: '1@2' headingFieldShows: ''.! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:31:40'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:17:21'!
 test09WindowPositionFieldShouldDisplayLastPositionWhenMovingInAnyDirectionFollowingPositions
 
-	| marsRover window |
-	marsRover := MarsRover at: 1@1 heading: self east.
+	| window |
 	window := MarsRoverWindow new.
-	marsRover followPositionsWith: window.
 	
-	marsRover process: 'ffbrf'.
+	self send: 'ffbrf' toRoverStartingAt: 1@1 heading: self east whileFollowingPositionWith: window.
 	
 	self assertWindow: window positionFieldShows: '2@0' headingFieldShows: ''.! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:32:21'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:30:42'!
 test10WindowHeadingFieldShouldDisplayLastHeadingWhenTurningEastFollowingHeadings
 
-	| marsRover window |
-	marsRover := MarsRover at: 1@1 heading: self north.
+	| window |
 	window := MarsRoverWindow new.
-	marsRover followHeadingWith: window.
 	
-	marsRover process: 'r'.
+	self send: 'r' toRoverStartingAt: 1@1 heading: self north whileFollowingHeadingWith: window.
 	
-	self assertWindow: window positionFieldShows: '' headingFieldShows: 'Apuntando al Este'.! !
+	self assertWindow: window positionFieldShows: '' headingFieldShows: window headingFieldEastValue.! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:32:56'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:30:55'!
 test11WindowHeadingFieldShouldDisplayLastHeadingWhenTurningWestFollowingHeadings
 
-	| marsRover window |
-	marsRover := MarsRover at: 1@1 heading: self north.
+	| window |
 	window := MarsRoverWindow new.
-	marsRover followHeadingWith: window.
 	
-	marsRover process: 'l'.
+	self send: 'l' toRoverStartingAt: 1@1 heading: self north whileFollowingHeadingWith: window.
 	
-	self assertWindow: window positionFieldShows: '' headingFieldShows: 'Apuntando al Oeste'! !
+	self assertWindow: window positionFieldShows: '' headingFieldShows: window headingFieldWestValue ! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:33:14'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:31:06'!
 test12WindowHeadingFieldShouldDisplayLastHeadingWhenTurningSouthFollowingHeadings
 
-	| marsRover window |
-	marsRover := MarsRover at: 1@1 heading: self east.
+	| window |
 	window := MarsRoverWindow new.
-	marsRover followHeadingWith: window.
 	
-	marsRover process: 'r'.
+	self send: 'r' toRoverStartingAt: 1@1 heading: self east whileFollowingHeadingWith: window.
 	
-	self assertWindow: window positionFieldShows: '' headingFieldShows: 'Apuntando al Sur'! !
+	self assertWindow: window positionFieldShows: '' headingFieldShows: window headingFieldSouthValue ! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:33:38'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:31:47'!
 test13WindowFieldsShouldDisplayLastUpdatedValuesWhenFollowingPositionsAndHeadings
 
-	| marsRover window |
-	marsRover := MarsRover at: 1@1 heading: self east.
+	| window |
 	window := MarsRoverWindow new.
-	marsRover followHeadingWith: window.
-	marsRover followPositionsWith: window.
 	
-	marsRover process: 'lf'.
+	self send: 'lf' toRoverStartingAt: 1@1 heading: self east whileFollowingPositionWith: (Set with: window) whileFollowingHeadingWith: (Set with: window).
 	
-	self assertWindow: window positionFieldShows: '1@2' headingFieldShows: 'Apuntando al Norte'! !
+	self assertWindow: window positionFieldShows: '1@2' headingFieldShows: window headingFieldNorthValue ! !
 
-!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 18:34:21'!
+!MarsRoverFollowerTest methodsFor: 'tests' stamp: 'TO 5/31/2022 19:44:27'!
 test14LoggerAndWindowShouldBeAbleToWorkSimultaneously
 
-	| marsRover window logger loggerStream |
-	marsRover := MarsRover at: 1@1 heading: self north.
+	| window logger followers |
 	window := MarsRoverWindow new.
 	logger := MarsRoverLogger new.
-	marsRover followPositionsWith: window.
-	marsRover followHeadingWith: window.
-	marsRover followPositionsWith: logger.
-	marsRover followHeadingWith: logger.
+	followers := Set with: logger with: window.
 	
-	marsRover process: 'frff'.
-	loggerStream := logger readStream.
+	self send: 'frff' toRoverStartingAt: 1@1 heading: self north whileFollowingPositionWith: followers whileFollowingHeadingWith: followers.
 	
-	self assertWindow: window positionFieldShows: '3@2' headingFieldShows: 'Apuntando al Este'.
-	self assert: '1@2' equals: loggerStream nextLine.
-	self assert: 'East' equals: loggerStream nextLine.
-	self assert: '2@2' equals: loggerStream nextLine.
-	self assert: '3@2' equals: loggerStream nextLine.
-	self assert: loggerStream atEnd.! !
+	self assertWindow: window positionFieldShows: '3@2' headingFieldShows: window headingFieldEastValue.
+	self assertLogger: logger onlyHasLines: (Array 
+		with: '1@2' 
+		with: logger eastValue 
+		with: '2@2' 
+		with: '3@2'
+	)! !
 
 
 !MarsRoverFollowerTest methodsFor: 'headings' stamp: 'TO 5/31/2022 18:16:51'!
@@ -702,10 +690,10 @@ visitMarsRoverHeadingWest: aMarsRoverHeadingWest
 	self subclassResponsibility ! !
 
 
-!MarsRoverFollower methodsFor: 'changes' stamp: 'TO 5/31/2022 17:51:23'!
+!MarsRoverFollower methodsFor: 'changes' stamp: 'TO 5/31/2022 19:45:38'!
 headingChangedTo: aMarsRoverHeading
 	
-	self subclassResponsibility ! !
+	aMarsRoverHeading accept: self! !
 
 !MarsRoverFollower methodsFor: 'changes' stamp: 'TO 5/31/2022 17:51:02'!
 positionChangedTo: aNewPosition
@@ -747,11 +735,6 @@ initialize
 	
 	log := WriteStream on: ''! !
 
-
-!MarsRoverLogger methodsFor: 'changes' stamp: 'TO 5/30/2022 21:12:19'!
-headingChangedTo: aMarsRoverHeading
-	
-	aMarsRoverHeading accept: self! !
 
 !MarsRoverLogger methodsFor: 'changes' stamp: 'TO 5/31/2022 18:43:44'!
 positionChangedTo: aNewPosition
@@ -808,9 +791,8 @@ MarsRoverFollower subclass: #MarsRoverWindow
 	poolDictionaries: ''
 	category: 'MarsRover-WithHeading'!
 
-!MarsRoverWindow methodsFor: 'accessing' stamp: 'TO 5/31/2022 15:01:09'!
+!MarsRoverWindow methodsFor: 'accessing' stamp: 'TO 5/31/2022 19:44:48'!
 marsRoverHeading
-	
 	
 	^marsRoverHeading! !
 
@@ -820,25 +802,51 @@ marsRoverPosition
 	^ marsRoverPosition asString ! !
 
 
-!MarsRoverWindow methodsFor: 'heading specific changes' stamp: 'TO 5/31/2022 15:00:30'!
+!MarsRoverWindow methodsFor: 'heading values' stamp: 'TO 5/31/2022 19:28:19'!
+headingFieldEastValue
+
+	^ self headingFieldValuePrefix, 'Este'! !
+
+!MarsRoverWindow methodsFor: 'heading values' stamp: 'TO 5/31/2022 19:28:30'!
+headingFieldNorthValue
+
+	^ self headingFieldValuePrefix, 'Norte'! !
+
+!MarsRoverWindow methodsFor: 'heading values' stamp: 'TO 5/31/2022 19:28:40'!
+headingFieldSouthValue
+
+	^ self headingFieldValuePrefix, 'Sur'! !
+
+!MarsRoverWindow methodsFor: 'heading values' stamp: 'TO 5/31/2022 19:28:05'!
+headingFieldValuePrefix
+
+	^ 'Apuntando al '! !
+
+!MarsRoverWindow methodsFor: 'heading values' stamp: 'TO 5/31/2022 19:28:52'!
+headingFieldWestValue
+
+	^ self headingFieldValuePrefix, 'Oeste'! !
+
+
+!MarsRoverWindow methodsFor: 'heading specific changes' stamp: 'TO 5/31/2022 19:25:48'!
 visitMarsRoverHeadingEast: aMarsRoverHeadingEast 
 	
-	marsRoverHeading := 'Apuntando al Este'! !
+	marsRoverHeading := self headingFieldEastValue! !
 
-!MarsRoverWindow methodsFor: 'heading specific changes' stamp: 'TO 5/31/2022 15:05:43'!
+!MarsRoverWindow methodsFor: 'heading specific changes' stamp: 'TO 5/31/2022 19:26:07'!
 visitMarsRoverHeadingNorth: aMarsRoverHeadingNorth 
 	
-	marsRoverHeading := 'Apuntando al Norte'! !
+	marsRoverHeading := self headingFieldNorthValue! !
 
-!MarsRoverWindow methodsFor: 'heading specific changes' stamp: 'TO 5/31/2022 15:09:30'!
+!MarsRoverWindow methodsFor: 'heading specific changes' stamp: 'TO 5/31/2022 19:27:00'!
 visitMarsRoverHeadingSouth: aMarsRoverHeadingSouth 
 	
-	marsRoverHeading := 'Apuntando al Sur'! !
+	marsRoverHeading := self headingFieldSouthValue! !
 
-!MarsRoverWindow methodsFor: 'heading specific changes' stamp: 'TO 5/31/2022 15:07:03'!
+!MarsRoverWindow methodsFor: 'heading specific changes' stamp: 'TO 5/31/2022 19:27:13'!
 visitMarsRoverHeadingWest: aMarsRoverHeadingWest 
 	
-	marsRoverHeading := 	'Apuntando al Oeste'! !
+	marsRoverHeading := 	self headingFieldWestValue! !
 
 
 !MarsRoverWindow methodsFor: 'initialize' stamp: 'TO 5/31/2022 15:02:01'!
@@ -847,11 +855,6 @@ initialize
 	marsRoverPosition := ''.
 	marsRoverHeading := ''! !
 
-
-!MarsRoverWindow methodsFor: 'changes' stamp: 'TO 5/31/2022 14:59:13'!
-headingChangedTo: aMarsRoverHeading
-	
-	aMarsRoverHeading accept: self! !
 
 !MarsRoverWindow methodsFor: 'changes' stamp: 'TO 5/30/2022 21:34:39'!
 positionChangedTo: aNewPosition
