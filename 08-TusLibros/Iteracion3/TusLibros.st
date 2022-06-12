@@ -272,6 +272,32 @@ setUp
 	testObjectsFactory := StoreTestObjectsFactory new.! !
 
 
+!RestInterfaceTest methodsFor: 'support - time tracking' stamp: 'TO 6/12/2022 10:13:29'!
+addToCartCreationTime: aQuantityOfMinutes
+
+	^ self cartCreationTime + (Duration minutes: aQuantityOfMinutes)! !
+
+!RestInterfaceTest methodsFor: 'support - time tracking' stamp: 'TO 6/12/2022 10:10:27'!
+cartCreationTime
+
+	^ testObjectsFactory today.! !
+
+!RestInterfaceTest methodsFor: 'support - time tracking' stamp: 'TO 6/12/2022 10:13:53'!
+fortyMinutesAfterCartWasCreated
+
+	^ self addToCartCreationTime: 40! !
+
+!RestInterfaceTest methodsFor: 'support - time tracking' stamp: 'TO 6/12/2022 10:13:48'!
+tenMinutesAfterCartWasCreated
+
+	^ self addToCartCreationTime: 10! !
+
+!RestInterfaceTest methodsFor: 'support - time tracking' stamp: 'TO 6/12/2022 10:13:59'!
+thirtyMinutesAfterCartWasCreated
+
+	^ self addToCartCreationTime: 30! !
+
+
 !RestInterfaceTest methodsFor: 'support' stamp: 'LZ 6/11/2022 17:48:32'!
 anotherValidClientId
 
@@ -302,23 +328,13 @@ invalidClientId
 
 	^ nil.! !
 
-!RestInterfaceTest methodsFor: 'support' stamp: 'LZ 6/11/2022 19:09:18'!
-lastTimeCartWasUsed
-
-	^ testObjectsFactory today.! !
-
-!RestInterfaceTest methodsFor: 'support' stamp: 'LZ 6/11/2022 19:17:45'!
-thirtyMinutesAfterCartWasUsedForLastTime
-
-	^ self lastTimeCartWasUsed + (Duration minutes: 30).! !
-
 !RestInterfaceTest methodsFor: 'support' stamp: 'LZ 6/11/2022 14:43:47'!
 validClientId
 
 	^ 'validClientId'.! !
 
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:27:15'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:10:27'!
 test01ShouldRaiseWhenTryingToCreateACartWithAnInvalidClientId
 
 	| restInterface |
@@ -327,11 +343,11 @@ test01ShouldRaiseWhenTryingToCreateACartWithAnInvalidClientId
 	authorizationBehavior := [ :aClientId :aPassword | false ].
 
 	self
-		should: [restInterface createCartFor: self invalidClientId withPassword: self correctPassword on: self lastTimeCartWasUsed ]
+		should: [restInterface createCartFor: self invalidClientId withPassword: self correctPassword on: self cartCreationTime ]
 		raise: Error - MessageNotUnderstood 
 		withMessageText: restInterface invalidClientOrPasswordErrorMessage.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:27:15'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:10:27'!
 test02ShouldRaiseWhenTryingToCreateACartWithAnIncorrectPassword
 
 	| restInterface |
@@ -340,68 +356,68 @@ test02ShouldRaiseWhenTryingToCreateACartWithAnIncorrectPassword
 	authorizationBehavior := [ :aClientId :aPassword | false ].
 
 	self
-		should: [restInterface createCartFor: self validClientId withPassword: self incorrectPassword on: self lastTimeCartWasUsed ]
+		should: [restInterface createCartFor: self validClientId withPassword: self incorrectPassword on: self cartCreationTime ]
 		raise: Error - MessageNotUnderstood 
 		withMessageText: restInterface invalidClientOrPasswordErrorMessage.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:27:15'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:10:27'!
 test03ListCartShouldBeEmptyAfterCreatingCart
 
 	| restInterface cartId |
 	
 	restInterface := self defaultRestInterface.
 
-	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self lastTimeCartWasUsed.
+	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
 	
-	self assert: (restInterface listCart: cartId) isEmpty.! !
+	self assert: (restInterface listCart: cartId on: self cartCreationTime) isEmpty.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:27:15'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:10:27'!
 test04TwoDifferentCartsShouldHaveDifferentIds
 
 	| restInterface firstCartId secondCartId |
 	
 	restInterface := self defaultRestInterface.
 
-	firstCartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self lastTimeCartWasUsed.
-	secondCartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self lastTimeCartWasUsed.
+	firstCartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
+	secondCartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
 	
 	self deny: firstCartId = secondCartId.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:28:02'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:10:27'!
 test05ShouldRaiseWhenTryingToAddAnInvalidBookToCart
 
 	| restInterface cartId |
 	
 	restInterface := self defaultRestInterface.
 
-	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self lastTimeCartWasUsed.
+	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
 	
 	self 
-		should: [ restInterface add: 1 of: testObjectsFactory itemNotSellByTheStore to: cartId on: self thirtyMinutesAfterCartWasUsedForLastTime ] 
+		should: [ restInterface add: 1 of: testObjectsFactory itemNotSellByTheStore to: cartId on: self cartCreationTime ] 
 		raise: Error - MessageNotUnderstood 
 		withExceptionDo: [ :anError |
-			self assert: (restInterface listCart: cartId) isEmpty.
+			self assert: (restInterface listCart: cartId on: self cartCreationTime) isEmpty.
 			self assert: Cart invalidItemErrorMessage equals: anError messageText.
 		]! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:28:02'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:10:27'!
 test06ShouldRaiseWhenTryingToAddANonPositiveQuantityOfBooksToCart
 
 	| restInterface cartId |
 	
 	restInterface := self defaultRestInterface.
 
-	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self lastTimeCartWasUsed.
+	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
 	
 	self 
-		should: [ restInterface add: 0 of: testObjectsFactory itemSellByTheStore to: cartId on: self thirtyMinutesAfterCartWasUsedForLastTime ] 
+		should: [ restInterface add: 0 of: testObjectsFactory itemSellByTheStore to: cartId on: self cartCreationTime ] 
 		raise: Error - MessageNotUnderstood 
 		withExceptionDo: [ :anError |
-			self assert: (restInterface listCart: cartId) isEmpty.
+			self assert: (restInterface listCart: cartId on: self cartCreationTime) isEmpty.
 			self assert: Cart invalidQuantityErrorMessage equals: anError messageText.
 		]! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:28:02'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:11:08'!
 test07ShouldRaiseWhenTryingToAddWithAnInvalidCartId
 
 	| restInterface |
@@ -409,11 +425,11 @@ test07ShouldRaiseWhenTryingToAddWithAnInvalidCartId
 	restInterface := self defaultRestInterface.
 	
 	self 
-		should: [ restInterface add: 1 of: testObjectsFactory itemSellByTheStore to: self invalidCartId on: self thirtyMinutesAfterCartWasUsedForLastTime ] 
+		should: [ restInterface add: 1 of: testObjectsFactory itemSellByTheStore to: self invalidCartId on: self thirtyMinutesAfterCartWasCreated ] 
 		raise: Error - MessageNotUnderstood 
 		withMessageText: restInterface invalidCartIdErrorMessage.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 17:26:07'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:10:27'!
 test08ShouldRaiseWhenTryingToListCartWithAnInvalidCartId
 
 	| restInterface |
@@ -421,26 +437,26 @@ test08ShouldRaiseWhenTryingToListCartWithAnInvalidCartId
 	restInterface := self defaultRestInterface.
 
 	self 
-		should: [ restInterface listCart: self invalidCartId ] 
+		should: [ restInterface listCart: self invalidCartId on: self cartCreationTime ] 
 		raise: Error - MessageNotUnderstood 
 		withMessageText: restInterface invalidCartIdErrorMessage.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:28:02'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:10:27'!
 test09AddingBooksAffectsListCart
 
 	| restInterface cartId cartItems |
 	
 	restInterface := self defaultRestInterface.
 	
-	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self lastTimeCartWasUsed.
+	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
 	
-	restInterface add: 2 of: testObjectsFactory itemSellByTheStore to: cartId on: self thirtyMinutesAfterCartWasUsedForLastTime.
+	restInterface add: 2 of: testObjectsFactory itemSellByTheStore to: cartId on: self cartCreationTime.
 	
-	cartItems := restInterface listCart: cartId.
+	cartItems := restInterface listCart: cartId on: self cartCreationTime.
 
 	self assert: 2 equals: (cartItems occurrencesOf: testObjectsFactory itemSellByTheStore).! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 17:26:53'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:56:19'!
 test10ShouldRaiseWhenTryingToCheckoutWithAnInvalidCartId
 
 	| restInterface |
@@ -448,65 +464,65 @@ test10ShouldRaiseWhenTryingToCheckoutWithAnInvalidCartId
 	restInterface := self defaultRestInterface.
 	
 	self 
-		should: [ restInterface checkoutCart: self invalidCartId
+		should: [ restInterface checkout: self invalidCartId
 				withCreditCardNumber: testObjectsFactory validCreditCardNumber 
 				withCreditCardName: testObjectsFactory validCreditCardName
-				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear ] 
+				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear on: self cartCreationTime ] 
 		raise: Error - MessageNotUnderstood 
 		withMessageText: restInterface invalidCartIdErrorMessage.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:27:15'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:56:19'!
 test11ShouldRaiseWhenTryingToCheckoutWithAnInvalidCreditCardNumber
 
 	| restInterface cartId |
 	
 	restInterface := self defaultRestInterface.
 	
-	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self lastTimeCartWasUsed.
+	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
 	
 	self 
-		should: [ restInterface checkoutCart: cartId
+		should: [ restInterface checkout: cartId
 				withCreditCardNumber: testObjectsFactory invalidCreditCardNumber 
 				withCreditCardName: testObjectsFactory validCreditCardName
-				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear ]
+				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear on: self cartCreationTime ]
 		raise: Error - MessageNotUnderstood 
 		withMessageText: CreditCard invalidCardNumberErrorMessage.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:27:15'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:56:19'!
 test12ShouldRaiseWhenTryingToCheckoutWithAnEmptyCardName
 
 	| restInterface cartId |
 	
 	restInterface := self defaultRestInterface.
 	
-	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self lastTimeCartWasUsed.
+	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
 	
 	self 
-		should: [ restInterface checkoutCart: cartId
+		should: [ restInterface checkout: cartId
 				withCreditCardNumber: testObjectsFactory validCreditCardNumber
 				withCreditCardName: testObjectsFactory emptyCreditCardName
-				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear ]
+				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear on: self cartCreationTime ]
 		raise: Error - MessageNotUnderstood 
 		withMessageText: CreditCard invalidCardNameErrorMessage.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:27:15'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:56:19'!
 test13ShouldRaiseWhenTryingToCheckoutWithATooLongCardName
 
 	| restInterface cartId |
 	
 	restInterface := self defaultRestInterface.
 	
-	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self lastTimeCartWasUsed.
+	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
 	
 	self 
-		should: [ restInterface checkoutCart: cartId
+		should: [ restInterface checkout: cartId
 				withCreditCardNumber: testObjectsFactory validCreditCardNumber
 				withCreditCardName: testObjectsFactory tooLongCreditCardName
-				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear ]
+				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear on: self cartCreationTime ]
 		raise: Error - MessageNotUnderstood 
 		withMessageText: CreditCard invalidCardNameErrorMessage.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:28:02'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:56:19'!
 test14ShouldRaiseWhenTryingToCheckoutWithAnExpiredCard
 
 	| restInterface cartId clientId password |
@@ -516,22 +532,22 @@ test14ShouldRaiseWhenTryingToCheckoutWithAnExpiredCard
 	clientId := self validClientId.
 	password := self correctPassword.
 	
-	cartId := restInterface createCartFor: clientId withPassword: password on: self lastTimeCartWasUsed.
+	cartId := restInterface createCartFor: clientId withPassword: password on: self cartCreationTime.
 	
-	restInterface add: 2 of: testObjectsFactory itemSellByTheStore to: cartId on: self thirtyMinutesAfterCartWasUsedForLastTime.
+	restInterface add: 2 of: testObjectsFactory itemSellByTheStore to: cartId on: self cartCreationTime.
 	
 	self 
-		should: [ restInterface checkoutCart: cartId
+		should: [ restInterface checkout: cartId
 				withCreditCardNumber: testObjectsFactory validCreditCardNumber
 				withCreditCardName: testObjectsFactory validCreditCardName
-				withCreditCardExpireDate: testObjectsFactory currentMonthOfPreviousYear ]
+				withCreditCardExpireDate: testObjectsFactory currentMonthOfPreviousYear on: self cartCreationTime ]
 		raise: Error - MessageNotUnderstood 
 		withExceptionDo: [ :anError |
 				self assert: (restInterface listPurchasesOf: clientId authenticatingWith: password) isEmpty.
 				self assert: Cashier canNotChargeAnExpiredCreditCardErrorMessage equals: anError messageText.
 			].! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:28:02'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:56:19'!
 test15PurchasesListIsAffectedAfterCheckingOut
 
 	| restInterface cartId clientId password purchasesList |
@@ -541,14 +557,14 @@ test15PurchasesListIsAffectedAfterCheckingOut
 	clientId := self validClientId.
 	password := self correctPassword.
 	
-	cartId := restInterface createCartFor: clientId withPassword: password on: self lastTimeCartWasUsed.
+	cartId := restInterface createCartFor: clientId withPassword: password on: self cartCreationTime.
 	
-	restInterface add: 2 of: testObjectsFactory itemSellByTheStore to: cartId on: self thirtyMinutesAfterCartWasUsedForLastTime.
+	restInterface add: 2 of: testObjectsFactory itemSellByTheStore to: cartId on: self cartCreationTime.
 	
-	restInterface checkoutCart: cartId
+	restInterface checkout: cartId
 				withCreditCardNumber: testObjectsFactory validCreditCardNumber
 				withCreditCardName: testObjectsFactory validCreditCardName
-				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear.
+				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear on: self cartCreationTime.
 	
 	purchasesList := restInterface listPurchasesOf: clientId authenticatingWith: password.
 		
@@ -567,7 +583,7 @@ test16ShouldRaiseWhenTryingToListPurchasesWithAnInvalidClientIdOrPassword
 		raise: Error - MessageNotUnderstood 
 		withMessageText: restInterface invalidClientOrPasswordErrorMessage.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:28:02'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:56:19'!
 test17PurchasesListOnlyShowsClientPurchases
 
 	| restInterface cartId clientId password anotherClientId purchasesList |
@@ -579,20 +595,20 @@ test17PurchasesListOnlyShowsClientPurchases
 	
 	anotherClientId := self anotherValidClientId.
 	
-	cartId := restInterface createCartFor: clientId withPassword: password on: self lastTimeCartWasUsed.
+	cartId := restInterface createCartFor: clientId withPassword: password on: self cartCreationTime.
 	
-	restInterface add: 2 of: testObjectsFactory itemSellByTheStore to: cartId on: self thirtyMinutesAfterCartWasUsedForLastTime.
+	restInterface add: 2 of: testObjectsFactory itemSellByTheStore to: cartId on: self cartCreationTime.
 	
-	restInterface checkoutCart: cartId
+	restInterface checkout: cartId
 				withCreditCardNumber: testObjectsFactory validCreditCardNumber
 				withCreditCardName: testObjectsFactory validCreditCardName
-				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear.
+				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear on: self cartCreationTime.
 
 	purchasesList := restInterface listPurchasesOf: anotherClientId authenticatingWith: password.
 		
 	self assert: purchasesList isEmpty.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:28:02'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:56:19'!
 test18ShouldRaiseWhenTryingToUseACartAfterBeingCheckedOut
 
 	| restInterface cartId clientId password |
@@ -602,39 +618,101 @@ test18ShouldRaiseWhenTryingToUseACartAfterBeingCheckedOut
 	clientId := self validClientId.
 	password := self correctPassword.
 	
-	cartId := restInterface createCartFor: clientId withPassword: password on: self lastTimeCartWasUsed.
+	cartId := restInterface createCartFor: clientId withPassword: password on: self cartCreationTime.
 	
-	restInterface add: 2 of: testObjectsFactory itemSellByTheStore to: cartId on: self thirtyMinutesAfterCartWasUsedForLastTime.
+	restInterface add: 2 of: testObjectsFactory itemSellByTheStore to: cartId on: self cartCreationTime.
 	
-	restInterface checkoutCart: cartId
+	restInterface checkout: cartId
 				withCreditCardNumber: testObjectsFactory validCreditCardNumber
 				withCreditCardName: testObjectsFactory validCreditCardName
-				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear.
+				withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear on: self cartCreationTime.
 				
 	self
-		should: [ restInterface add: 1 of: testObjectsFactory itemSellByTheStore to: cartId on: self thirtyMinutesAfterCartWasUsedForLastTime ]
+		should: [ restInterface add: 1 of: testObjectsFactory itemSellByTheStore to: cartId on: self thirtyMinutesAfterCartWasCreated ]
 	 	raise: Error - MessageNotUnderstood
 		withMessageText: restInterface invalidCartIdErrorMessage.! !
 
-!RestInterfaceTest methodsFor: 'tests' stamp: 'LZ 6/11/2022 19:24:42'!
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:14:35'!
 test19ShouldRaiseWhenTryingToAddABookToACartThatWasUsedMoreThan30MinutesAgo
 
-	| restInterface cartId clientId password |
-	
+	| restInterface cartId |
 	restInterface := self defaultRestInterface.
 	
-	clientId := self validClientId.
-	password := self correctPassword.
-	
-	cartId := restInterface createCartFor: clientId withPassword: password on: self lastTimeCartWasUsed.
+	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
 
 	self
-		should: [ restInterface add: 1 of: testObjectsFactory itemSellByTheStore to: cartId on: self thirtyMinutesAfterCartWasUsedForLastTime ]
+		should: [ restInterface add: 1 of: testObjectsFactory itemSellByTheStore to: cartId on: self thirtyMinutesAfterCartWasCreated ]
 	 	raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: restInterface cartIsNoLongerValidErrorMessage equals: anError messageText.
-			self assert: (restInterface listCart: cartId) isEmpty.
+			self assert: (restInterface listCart: cartId on: self cartCreationTime) isEmpty.
 		]! !
+
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:11:08'!
+test20ShouldRaiseWhenTryingToListACartThatWasUsedMoreThan30MinutesAgo
+
+	| restInterface cartId |
+	restInterface := self defaultRestInterface.
+	
+	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
+
+	self
+		should: [ restInterface listCart: cartId on: self thirtyMinutesAfterCartWasCreated ]
+	 	raise: Error - MessageNotUnderstood
+		withMessageText: restInterface cartIsNoLongerValidErrorMessage ! !
+
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:56:19'!
+test21ShouldRaiseWhenTryingToCheckOutACartThatWasUsedMoreThan30MinutesAgo
+
+	| restInterface cartId |
+	restInterface := self defaultRestInterface.
+	
+	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
+	
+	restInterface add: 1 of: testObjectsFactory itemSellByTheStore to: cartId on: self cartCreationTime.
+
+	self
+		should: [ restInterface 
+					checkout: cartId 
+					withCreditCardNumber: testObjectsFactory validCreditCardNumber 
+					withCreditCardName:  testObjectsFactory validCreditCardName 
+					withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear
+					on: self thirtyMinutesAfterCartWasCreated ]
+	 	raise: Error - MessageNotUnderstood
+		withExceptionDo: [:anError| 
+			self assert: restInterface cartIsNoLongerValidErrorMessage equals: anError messageText.
+			self assert: (restInterface listPurchasesOf: self validClientId authenticatingWith: self correctPassword) isEmpty.
+		]! !
+
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:56:19'!
+test22AddingToCartShouldAffectLastUsedTime
+
+	| restInterface cartId |
+	restInterface := self defaultRestInterface.	
+	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
+	
+	restInterface add: 1 of: testObjectsFactory itemSellByTheStore to: cartId on: self tenMinutesAfterCartWasCreated.
+	restInterface 
+		checkout: cartId 
+		withCreditCardNumber: testObjectsFactory validCreditCardNumber 
+		withCreditCardName:  testObjectsFactory validCreditCardName 
+		withCreditCardExpireDate: testObjectsFactory currentMonthOfNextYear
+		on: self thirtyMinutesAfterCartWasCreated.
+		
+	self deny: (restInterface listPurchasesOf: self validClientId authenticatingWith: self correctPassword) isEmpty ! !
+
+!RestInterfaceTest methodsFor: 'tests' stamp: 'TO 6/12/2022 10:25:55'!
+test23ListingCartShouldAffectLastUsedTime
+
+	| restInterface cartId cartItems |
+	restInterface := self defaultRestInterface.	
+	cartId := restInterface createCartFor: self validClientId withPassword: self correctPassword on: self cartCreationTime.
+	
+	restInterface listCart: cartId on: 	self tenMinutesAfterCartWasCreated.	
+	restInterface add: 2 of: testObjectsFactory itemSellByTheStore to: cartId on: self thirtyMinutesAfterCartWasCreated.
+	
+	cartItems := restInterface listCart: cartId on: self fortyMinutesAfterCartWasCreated.
+	self assert: 2 equals: (cartItems occurrencesOf: testObjectsFactory itemSellByTheStore).! !
 
 
 !RestInterfaceTest methodsFor: 'merchant processor protocol' stamp: 'LZ 6/11/2022 16:58:16'!
@@ -900,77 +978,121 @@ invalidCardNumberErrorMessage
 
 !classDefinition: #RestInterface category: 'TusLibros'!
 Object subclass: #RestInterface
-	instanceVariableNames: 'clientAuthorizator restInterfaceCarts nextCartId catalog merchantProcessor salesBook'
+	instanceVariableNames: 'clientAuthorizator timeTrackingCarts nextCartId catalog merchantProcessor salesBook'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!RestInterface methodsFor: 'add to cart' stamp: 'LZ 6/11/2022 19:28:02'!
+!RestInterface methodsFor: 'add to cart' stamp: 'TO 6/12/2022 11:11:25'!
 add: aQuantityOfBooks of: aBook to: aCartId on: aDateAndTime 
 
-	| cart |
+	self 
+		do: [ :aTimeTrackingCartWrapper| aTimeTrackingCartWrapper add: aQuantityOfBooks of: aBook ] 
+		ifCartIdentifiedBy: aCartId 
+		isStillValidOn: aDateAndTime! !
 
-	cart := self cartAt: aCartId.
 
-	cart add: aQuantityOfBooks of: aBook.! !
+!RestInterface methodsFor: 'authorization - private' stamp: 'TO 6/12/2022 11:02:37'!
+do: aBlock afterAuthenticating: aClientId with: aPassword
+
+	self assertCanAuthorize: aClientId with: aPassword.
+	
+	^ aBlock value! !
 
 
-!RestInterface methodsFor: 'assertions' stamp: 'LZ 6/11/2022 14:50:24'!
-assertCanAuthorized: aClientId with: aPassword
+!RestInterface methodsFor: 'assertions' stamp: 'TO 6/12/2022 10:50:16'!
+assertCanAuthorize: aClientId with: aPassword
 
 	(clientAuthorizator authorize: aClientId with: aPassword) ifFalse: [
 		self error: self invalidClientOrPasswordErrorMessage.
 	].! !
 
 
-!RestInterface methodsFor: 'cart by id - private' stamp: 'LZ 6/11/2022 19:46:41'!
-cartAt: aCartId
+!RestInterface methodsFor: 'cart time tracking - private' stamp: 'TO 6/12/2022 11:16:26'!
+cartIdentifiedBy: aCartId
 
-	^ restInterfaceCarts detect: [:aRestInterfaceCart | aRestInterfaceCart identifiedBy: aCartId ]
-					ifNone: [self error: self invalidCartIdErrorMessage ].! !
+	^ timeTrackingCarts 
+		detect: [:aTimeTrackingCartWrapper | aTimeTrackingCartWrapper identifiedBy: aCartId ]
+		ifNone: [ self error: self invalidCartIdErrorMessage ].! !
 
+!RestInterface methodsFor: 'cart time tracking - private' stamp: 'TO 6/12/2022 11:11:53'!
+do: aBlock ifCartIdentifiedBy: aCartId isStillValidOn: aDateAndTime
 
-!RestInterface methodsFor: 'checkout cart' stamp: 'LZ 6/11/2022 19:49:40'!
-checkoutCart: aCartId withCreditCardNumber: aCardNumber withCreditCardName: aName withCreditCardExpireDate: anExpireDate
-
-	| restInterfaceCart creditCard |
-	restInterfaceCart := self cartAt: aCartId.
+	| timeTrackingCartWrapper |
+	timeTrackingCartWrapper := self cartIdentifiedBy: aCartId.
 	
-	creditCard := CreditCard for: aCardNumber owner: aName expiringOn: anExpireDate.
-	
-	( Cashier 
-		toCheckout: restInterfaceCart
-		for: restInterfaceCart customer
-		charging: creditCard 
+	^ timeTrackingCartWrapper 
+		do: aBlock 
+		ifMinutesSinceLastUsedIsLessThan: 30 
+		on: aDateAndTime 
+		ifNot: [ self error: self cartIsNoLongerValidErrorMessage ]	
+	! !
+
+
+!RestInterface methodsFor: 'checkout cart - private' stamp: 'TO 6/12/2022 11:15:51'!
+cashierToCheckout: aTimeTrackingCartWrapper charging: aCreditCard on: aDateAndTime 
+
+	^ Cashier 
+		toCheckout: aTimeTrackingCartWrapper
+		for: aTimeTrackingCartWrapper customer
+		charging: aCreditCard 
 		through: merchantProcessor 
-		on: Date today 
-		registeringOn: salesBook)
-		checkOut.
+		on: aDateAndTime
+		registeringOn: salesBook! !
+
+!RestInterface methodsFor: 'checkout cart - private' stamp: 'TO 6/12/2022 11:15:11'!
+checkout: aTimeTrackingCartWrapper charging: aCreditCard  on: aDateAndTime
+
+	^ (self cashierToCheckout: aTimeTrackingCartWrapper charging: aCreditCard on: aDateAndTime) checkOut! !
+
+!RestInterface methodsFor: 'checkout cart - private' stamp: 'TO 6/12/2022 11:16:58'!
+remove: aCartId
+
+	^ timeTrackingCarts removeAllSuchThat: [ :aTimeTrackingCartWrapperToBeTestedForRemoval | aTimeTrackingCartWrapperToBeTestedForRemoval identifiedBy: aCartId ]! !
+
+
+!RestInterface methodsFor: 'checkout cart' stamp: 'TO 6/12/2022 11:17:13'!
+checkout: aCartId withCreditCardNumber: aCardNumber withCreditCardName: aName withCreditCardExpireDate: anExpireDate on: aDateAndTime 
+
+	| creditCard |
+	self 
+		do: [ :aTimeTrackingCartWrapper | 
+			creditCard := CreditCard for: aCardNumber owner: aName expiringOn: anExpireDate.
+	
+			self checkout: aTimeTrackingCartWrapper charging: creditCard on: aDateAndTime.
 		
-	restInterfaceCarts remove: restInterfaceCart .! !
+			self remove: aCartId
+		] 
+		ifCartIdentifiedBy: aCartId 
+		isStillValidOn: aDateAndTime.! !
 
 
-!RestInterface methodsFor: 'create cart' stamp: 'LZ 6/11/2022 19:42:05'!
+!RestInterface methodsFor: 'create cart' stamp: 'TO 6/12/2022 11:05:14'!
 createCartFor: aClientId withPassword: aPassword on: aDateAndTime 
 
-	| cart |
-	self assertCanAuthorized: aClientId with: aPassword.
-	self calculateNextId.
-	
-	cart := (Cart acceptingItemsOf: catalog).
-
-	restInterfaceCarts add: ( RestInterfaceCart for: cart 
-						identifiedBy: nextCartId 
-						ownedBy: aClientId 
-						createdOn: aDateAndTime) .
-
-	^ nextCartId.! !
+	^ self 
+		do: [ self createCartOwnedBy: aClientId on: aDateAndTime ] 
+		afterAuthenticating: aClientId 
+		with: aPassword.! !
 
 
 !RestInterface methodsFor: 'create cart - private' stamp: 'LZ 6/11/2022 18:45:23'!
 calculateNextId
 	
 	nextCartId := nextCartId + 1! !
+
+!RestInterface methodsFor: 'create cart - private' stamp: 'TO 6/12/2022 11:16:26'!
+createCartOwnedBy: aClientId on: aDateAndTime
+
+	| cart |
+	self calculateNextId.	
+	cart := (Cart acceptingItemsOf: catalog).
+	timeTrackingCarts add: (TimeTrackingCartWrapper for: cart 
+						identifiedBy: nextCartId 
+						ownedBy: aClientId 
+						createdOn: aDateAndTime).
+
+	^ nextCartId! !
 
 
 !RestInterface methodsFor: 'error messages' stamp: 'LZ 6/11/2022 19:20:14'!
@@ -989,28 +1111,39 @@ invalidClientOrPasswordErrorMessage
 	^ 'Invalid client id or password'! !
 
 
-!RestInterface methodsFor: 'initialization' stamp: 'LZ 6/11/2022 19:50:15'!
+!RestInterface methodsFor: 'initialization' stamp: 'TO 6/12/2022 11:16:26'!
 initializeWith: aClientAuthorizator acceptingItemsOf: aCatalog through: aMerchantProcessor   
 	
 	clientAuthorizator := aClientAuthorizator.
 	nextCartId := 1.
-	restInterfaceCarts := OrderedCollection new.
+	timeTrackingCarts := OrderedCollection new.
 	catalog := aCatalog.
 	salesBook := OrderedCollection new.
 	merchantProcessor := aMerchantProcessor .! !
 
 
-!RestInterface methodsFor: 'list cart' stamp: 'LZ 6/11/2022 15:05:56'!
-listCart: aCartId 
+!RestInterface methodsFor: 'list cart' stamp: 'TO 6/12/2022 11:17:51'!
+listCart: aCartId on: aDateAndTime  
 	
-	^ (self cartAt: aCartId) items.! !
+	^ self 
+		do: [ :aTimeTrackingCartWrapper| aTimeTrackingCartWrapper items ] 
+		ifCartIdentifiedBy: aCartId 
+		isStillValidOn: aDateAndTime! !
 
 
-!RestInterface methodsFor: 'list purchases' stamp: 'LZ 6/11/2022 17:53:42'!
+!RestInterface methodsFor: 'list purchases - private' stamp: 'TO 6/12/2022 11:07:47'!
+salesTo: aClientId
+
+	^ salesBook select: [:aSale | aSale toClient: aClientId ]! !
+
+
+!RestInterface methodsFor: 'list purchases' stamp: 'TO 6/12/2022 11:07:47'!
 listPurchasesOf: aClientId authenticatingWith: aPassword
 
-	self assertCanAuthorized: aClientId with: aPassword.
-	^ salesBook select: [:aSale | aSale toClient: aClientId ].! !
+	^ self 
+		do: [ self salesTo: aClientId ] 
+		afterAuthenticating: aClientId 
+		with: aPassword.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1022,45 +1155,6 @@ RestInterface class
 with: aClientAuthorizator acceptingItemsOf: aCatalog through: aMerchantProcessor  
 
 	^ self new initializeWith: aClientAuthorizator acceptingItemsOf: aCatalog through: aMerchantProcessor.! !
-
-
-!classDefinition: #RestInterfaceCart category: 'TusLibros'!
-Object subclass: #RestInterfaceCart
-	instanceVariableNames: 'cart cartId customer lastUsedOn'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TusLibros'!
-
-!RestInterfaceCart methodsFor: 'accessing' stamp: 'LZ 6/11/2022 19:49:04'!
-customer
-
-	^ customer.! !
-
-
-!RestInterfaceCart methodsFor: 'testing' stamp: 'LZ 6/11/2022 19:45:11'!
-identifiedBy: aCartId
-
-	^ cartId = aCartId.! !
-
-
-!RestInterfaceCart methodsFor: 'initialization' stamp: 'LZ 6/11/2022 19:39:23'!
-initializeFor: aCart identifiedBy: aCartId ownedBy: aCustomer createdOn: aDateAndTime
-
-	cart := aCart.
-	cartId := aCartId.
-	customer := aCustomer.
-	lastUsedOn := aDateAndTime.! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'RestInterfaceCart class' category: 'TusLibros'!
-RestInterfaceCart class
-	instanceVariableNames: ''!
-
-!RestInterfaceCart class methodsFor: 'instance creation' stamp: 'LZ 6/11/2022 19:53:33'!
-for: aCart identifiedBy: aCartId ownedBy: aCustomer createdOn: aDateAndTime
-	
-	^ self new initializeFor: aCart identifiedBy: aCartId ownedBy: aCustomer createdOn: aDateAndTime.! !
 
 
 !classDefinition: #Sale category: 'TusLibros'!
@@ -1206,3 +1300,74 @@ today
 defaultCustomer
 	
 	^ 'default customer'! !
+
+
+!classDefinition: #TimeTrackingCartWrapper category: 'TusLibros'!
+ProtoObject subclass: #TimeTrackingCartWrapper
+	instanceVariableNames: 'cart cartId customer lastUsedOn'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!TimeTrackingCartWrapper methodsFor: 'accessing' stamp: 'LZ 6/11/2022 19:49:04'!
+customer
+
+	^ customer.! !
+
+
+!TimeTrackingCartWrapper methodsFor: 'testing' stamp: 'LZ 6/11/2022 19:45:11'!
+identifiedBy: aCartId
+
+	^ cartId = aCartId.! !
+
+
+!TimeTrackingCartWrapper methodsFor: 'initialization' stamp: 'LZ 6/11/2022 19:39:23'!
+initializeFor: aCart identifiedBy: aCartId ownedBy: aCustomer createdOn: aDateAndTime
+
+	cart := aCart.
+	cartId := aCartId.
+	customer := aCustomer.
+	lastUsedOn := aDateAndTime.! !
+
+
+!TimeTrackingCartWrapper methodsFor: 'does not understand' stamp: 'TO 6/12/2022 09:28:37'!
+doesNotUnderstand: aMessage
+
+	^ aMessage sendTo: cart ! !
+
+
+!TimeTrackingCartWrapper methodsFor: 'time tracking' stamp: 'TO 6/12/2022 10:53:03'!
+do: aBlockToBeExecutedIfWithinTimeLimit ifMinutesSinceLastUsedIsLessThan: aQuantityOfMinutes on: aDateAndTime ifNot: aBlockToBeExecutedIfTimeLimitWasExceeded
+	
+	(self minutesSinceLastUsed: aDateAndTime lessThan: aQuantityOfMinutes)
+		ifTrue: [ | resultOfBlock | 
+			resultOfBlock := aBlockToBeExecutedIfWithinTimeLimit value: self.
+			self lastUsedOn: aDateAndTime.
+	
+			^ resultOfBlock 
+		]
+		ifFalse: aBlockToBeExecutedIfTimeLimitWasExceeded 
+	
+	
+	! !
+
+!TimeTrackingCartWrapper methodsFor: 'time tracking' stamp: 'TO 6/12/2022 10:21:16'!
+lastUsedOn: aDateAndTime
+
+	lastUsedOn := aDateAndTime ! !
+
+!TimeTrackingCartWrapper methodsFor: 'time tracking' stamp: 'TO 6/12/2022 10:53:11'!
+minutesSinceLastUsed: aDateAndTime lessThan: aQuantityOfMinutes 
+
+	^ (aDateAndTime - lastUsedOn) totalMinutes < aQuantityOfMinutes! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TimeTrackingCartWrapper class' category: 'TusLibros'!
+TimeTrackingCartWrapper class
+	instanceVariableNames: ''!
+
+!TimeTrackingCartWrapper class methodsFor: 'instance creation' stamp: 'LZ 6/11/2022 19:53:33'!
+for: aCart identifiedBy: aCartId ownedBy: aCustomer createdOn: aDateAndTime
+	
+	^ self new initializeFor: aCart identifiedBy: aCartId ownedBy: aCustomer createdOn: aDateAndTime.! !
