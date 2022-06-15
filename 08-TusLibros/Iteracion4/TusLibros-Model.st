@@ -339,6 +339,48 @@ today
 	self subclassResponsibility ! !
 
 
+!classDefinition: #ConcurrentJobs category: 'TusLibros-Model'!
+Object subclass: #ConcurrentJobs
+	instanceVariableNames: 'secondaryThreadBlock mainThreadBlock resultsBlock'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros-Model'!
+
+!ConcurrentJobs methodsFor: 'initialization' stamp: 'TO 6/15/2022 15:00:17'!
+initializeWith: aBlockToBeRunInTheMainThread with: aBlockToBeRunInSecondaryThread whenFinished: aBlockToBeEvaluatedWithResults
+
+	mainThreadBlock := aBlockToBeRunInTheMainThread.
+	secondaryThreadBlock := aBlockToBeRunInSecondaryThread.
+	resultsBlock := aBlockToBeEvaluatedWithResults.! !
+
+
+!ConcurrentJobs methodsFor: 'evaluating' stamp: 'TO 6/15/2022 15:04:07'!
+run
+	
+	| mainBlockResult secondaryBlockResult readySemaphore |
+	
+	readySemaphore := Semaphore new.
+	[ secondaryBlockResult := secondaryThreadBlock value. readySemaphore signal ] fork. 
+	mainBlockResult := mainThreadBlock value.
+	readySemaphore wait.	
+
+	^ resultsBlock value: mainBlockResult value: secondaryBlockResult
+	
+
+! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'ConcurrentJobs class' category: 'TusLibros-Model'!
+ConcurrentJobs class
+	instanceVariableNames: ''!
+
+!ConcurrentJobs class methodsFor: 'instance creation' stamp: 'TO 6/15/2022 15:00:04'!
+with: aBlockToBeRunInTheMainThread with: aBlockToBeRunInSecondaryThread whenFinished: aBlockToBeEvaluatedWithResults
+
+	^self new initializeWith: aBlockToBeRunInTheMainThread with: aBlockToBeRunInSecondaryThread whenFinished: aBlockToBeEvaluatedWithResults! !
+
+
 !classDefinition: #CreditCard category: 'TusLibros-Model'!
 Object subclass: #CreditCard
 	instanceVariableNames: 'expiration number ownerName'
@@ -779,27 +821,21 @@ list: aSale on: quantitiesByItem
 		newQuantity := oldQuantity + aLineItem quantity.
 		quantitiesByItem at: aLineItem item put: newQuantity ]! !
 
-!TusLibrosSystemFacade methodsFor: 'private' stamp: 'TO 6/13/2022 21:36:49'!
+!TusLibrosSystemFacade methodsFor: 'private' stamp: 'TO 6/15/2022 15:02:29'!
 performanceWith: aBlockForTotalSales with: aBlockForTotalMoneyRaised summary: aBlockForTheSummary
-
-	| totalMoney totalSales performance semaphore |
 	
-	performance := Dictionary new.
+	(ConcurrentJobs with: aBlockForTotalSales with: aBlockForTotalMoneyRaised whenFinished: [ :totalSales :totalMoney| | performance |
+		performance := Dictionary new.
+		
+		performance at: 'quantity' put: totalSales.
+		performance at: 'total' put: totalMoney.
+		performance at: 'summary' put: (aBlockForTheSummary value: totalSales value: totalMoney).
 	
-	semaphore := Semaphore new.
-	[ totalSales := aBlockForTotalSales value. semaphore signal ] fork. 
-	[ totalMoney := aBlockForTotalMoneyRaised value. semaphore signal] fork.
-	semaphore wait.
-	semaphore wait.	
-
-	performance at: 'quantity' put: totalSales.
-	performance at: 'total' put: totalMoney.
-	performance at: 'summary' put: (aBlockForTheSummary value: totalSales value: totalMoney).
+		^ performance
+	]) run
 	
-	^performance
 	
-
-! !
+	! !
 
 !TusLibrosSystemFacade methodsFor: 'private' stamp: 'HernanWilkinson 6/17/2015 20:55'!
 salesDoneBy: aUser
