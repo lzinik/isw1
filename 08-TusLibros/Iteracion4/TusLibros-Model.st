@@ -341,30 +341,47 @@ today
 
 !classDefinition: #ConcurrentJobs category: 'TusLibros-Model'!
 Object subclass: #ConcurrentJobs
-	instanceVariableNames: 'secondaryThreadBlock mainThreadBlock resultsBlock'
+	instanceVariableNames: 'secondaryThreadBlock mainThreadBlock resultsBlock resultsReadySemaphore secondaryThreadResult mainThreadResult'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros-Model'!
 
-!ConcurrentJobs methodsFor: 'initialization' stamp: 'TO 6/15/2022 15:00:17'!
+!ConcurrentJobs methodsFor: 'initialization' stamp: 'TO 6/16/2022 14:16:40'!
 initializeWith: aBlockToBeRunInTheMainThread with: aBlockToBeRunInSecondaryThread whenFinished: aBlockToBeEvaluatedWithResults
 
 	mainThreadBlock := aBlockToBeRunInTheMainThread.
 	secondaryThreadBlock := aBlockToBeRunInSecondaryThread.
-	resultsBlock := aBlockToBeEvaluatedWithResults.! !
+	resultsBlock := aBlockToBeEvaluatedWithResults.
+	resultsReadySemaphore := Semaphore new.! !
 
 
-!ConcurrentJobs methodsFor: 'evaluating' stamp: 'TO 6/15/2022 15:04:07'!
+!ConcurrentJobs methodsFor: 'evaluating - private' stamp: 'TO 6/16/2022 14:19:21'!
+joinResults
+
+	^ resultsBlock value: mainThreadResult value: secondaryThreadResult! !
+
+!ConcurrentJobs methodsFor: 'evaluating - private' stamp: 'TO 6/16/2022 14:20:01'!
+startJobs
+
+	[ 
+		secondaryThreadResult := secondaryThreadBlock value. 
+	 	resultsReadySemaphore signal 
+	] fork. 
+	mainThreadResult := mainThreadBlock value! !
+
+!ConcurrentJobs methodsFor: 'evaluating - private' stamp: 'TO 6/16/2022 14:18:37'!
+waitForResults
+
+	^ resultsReadySemaphore wait! !
+
+
+!ConcurrentJobs methodsFor: 'evaluating' stamp: 'TO 6/16/2022 14:19:21'!
 run
 	
-	| mainBlockResult secondaryBlockResult readySemaphore |
-	
-	readySemaphore := Semaphore new.
-	[ secondaryBlockResult := secondaryThreadBlock value. readySemaphore signal ] fork. 
-	mainBlockResult := mainThreadBlock value.
-	readySemaphore wait.	
+	self startJobs.
+	self waitForResults.	
 
-	^ resultsBlock value: mainBlockResult value: secondaryBlockResult
+	^ self joinResults
 	
 
 ! !

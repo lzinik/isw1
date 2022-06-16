@@ -197,20 +197,26 @@ open
 
 !classDefinition: #TusLibrosClientRestInterface category: 'TusLibrosREST'!
 Object subclass: #TusLibrosClientRestInterface
-	instanceVariableNames: 'port'
+	instanceVariableNames: 'port asynchronousRequestDoneSemaphore'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibrosREST'!
 
-!TusLibrosClientRestInterface methodsFor: 'requests - private' stamp: 'TO 6/15/2022 15:54:15'!
+!TusLibrosClientRestInterface methodsFor: 'requests - private' stamp: 'TO 6/16/2022 14:31:05'!
+doAtomic: aBlockToEvaluateWithResult with: aResponse
+
+	asynchronousRequestDoneSemaphore wait.
+	[ aBlockToEvaluateWithResult value: (WebUtils jsonDecode: ((aResponse content) readStream)) ] ensure: [ asynchronousRequestDoneSemaphore signal ]! !
+
+!TusLibrosClientRestInterface methodsFor: 'requests - private' stamp: 'TO 6/16/2022 14:30:40'!
 submitAsynchronously: aService fields: aFieldDict withResultDo:  aBlockToEvaluateWithResult
 
-	[ | resp | 
-		resp := WebClient htmlSubmit: (self url, aService) fields: aFieldDict. 
+	[ | response | 
+		response := WebClient htmlSubmit: (self url, aService) fields: aFieldDict. 
 
-		resp isSuccess ifFalse: [ self error: resp content ].
+		response isSuccess ifFalse: [ self error: response content ].
 		
-		aBlockToEvaluateWithResult value: (WebUtils jsonDecode: ((resp content) readStream))
+		self doAtomic: aBlockToEvaluateWithResult with: response
 	 ] fork.
 		
 	! !
@@ -250,6 +256,12 @@ listCart: cartId whenDone: aBlockToEvaluateWithResults
 		withResultDo: [ : result | aBlockToEvaluateWithResults value: result asOrderedCollection]
 	! !
 
+
+!TusLibrosClientRestInterface methodsFor: 'initialization' stamp: 'TO 6/16/2022 14:27:01'!
+initialize
+
+	asynchronousRequestDoneSemaphore := Semaphore new.
+	asynchronousRequestDoneSemaphore signal.! !
 
 !TusLibrosClientRestInterface methodsFor: 'initialization' stamp: 'NR 6/9/2022 08:11:33'!
 port
