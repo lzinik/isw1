@@ -5,17 +5,23 @@ TestCase subclass: #ImportTest
 	poolDictionaries: ''
 	category: 'CustomerImporter'!
 
-!ImportTest methodsFor: 'assertions' stamp: 'To 6/16/2022 21:38:58'!
-assert: aCustomer hasImported: anAddress      
-	
-	| address |
-	address := aCustomer addressAt: anAddress streetName.
-	self assert: anAddress streetName equals: address streetName.
-	self assert: anAddress streetNumber equals: address streetNumber.
-	self assert: anAddress town equals: address town.
-	self assert: anAddress zipCode equals: address zipCode.
-	self assert: anAddress province equals: address province.
-	! !
+!ImportTest methodsFor: 'assertions' stamp: 'TO 6/16/2022 23:33:03'!
+assert: importedCustomer hasRegistered: aCollectionOfAddresses
+
+	aCollectionOfAddresses do: [: anAddressThatShouldBeImported | 
+		| address |
+		address := importedCustomer addressAt: anAddressThatShouldBeImported streetName.
+		self assert: address representsSameAddressAs: anAddressThatShouldBeImported. 
+	]! !
+
+!ImportTest methodsFor: 'assertions' stamp: 'TO 6/16/2022 23:28:57'!
+assert: anAddressToBeTested representsSameAddressAs: anAddress
+
+	self assert: anAddress streetName equals: anAddressToBeTested streetName.
+	self assert: anAddress streetNumber equals: anAddressToBeTested streetNumber.
+	self assert: anAddress town equals: anAddressToBeTested town.
+	self assert: anAddress zipCode equals: anAddressToBeTested zipCode.
+	self assert: anAddress province equals: anAddressToBeTested province! !
 
 !ImportTest methodsFor: 'assertions' stamp: 'To 6/16/2022 21:23:17'!
 assert: aCustomerToBeTested sharesNameAndIdentificationWith: aCustomer     
@@ -25,41 +31,43 @@ assert: aCustomerToBeTested sharesNameAndIdentificationWith: aCustomer
 	self assert: aCustomer identificationType equals: aCustomerToBeTested identificationType.
 	self assert: aCustomer identificationNumber equals: aCustomerToBeTested identificationNumber! !
 
-!ImportTest methodsFor: 'assertions' stamp: 'To 6/16/2022 21:48:51'!
-assertHasImportedJuanPerez
+!ImportTest methodsFor: 'assertions' stamp: 'TO 6/16/2022 23:38:03'!
+assertHasImported: aCustomer withAddresses: aCollectionOfAddresses 
 
 	| importedCustomer |
-	importedCustomer := self customerIdentifiedAs: self juanPerez identificationType number: self juanPerez identificationNumber.
-	self assert: importedCustomer sharesNameAndIdentificationWith: self juanPerez.
-	self assert: importedCustomer hasImported: self juanPerezAlemAddress.! !
-
-!ImportTest methodsFor: 'assertions' stamp: 'To 6/16/2022 21:46:19'!
-assertHasImportedPepeSanchez
-
-	| importedCustomer |
-	importedCustomer := self customerIdentifiedAs: self pepeSanchez identificationType number: self pepeSanchez identificationNumber.
-	self assert: importedCustomer sharesNameAndIdentificationWith: self pepeSanchez.
-	self assert: importedCustomer hasImported: self pepeSanchezSanMartinAddress.
-	self assert: importedCustomer hasImported: self pepeSanchezMaipuAddress.! !
+	importedCustomer := self customerIdentifiedAs: aCustomer identificationType number: aCustomer identificationNumber.
+	
+	self assert: importedCustomer sharesNameAndIdentificationWith: aCustomer.
+	self assert: importedCustomer hasRegistered: aCollectionOfAddresses.! !
 
 
-!ImportTest methodsFor: 'addresses' stamp: 'To 6/16/2022 21:27:14'!
+!ImportTest methodsFor: 'addresses' stamp: 'TO 6/16/2022 23:25:17'!
 address: aStreetName number: aStreetNumber town: aTown zipCode: aZipCode province: aProvince    
 
-	^ Address new streetName:  aStreetName; streetNumber: aStreetNumber; town: aTown; zipCode: aZipCode; province: aProvince! !
+	^ Address new streetName: aStreetName; streetNumber: aStreetNumber; town: aTown; zipCode: aZipCode; province: aProvince! !
 
-!ImportTest methodsFor: 'addresses' stamp: 'To 6/16/2022 21:34:42'!
+!ImportTest methodsFor: 'addresses' stamp: 'TO 6/16/2022 23:19:56'!
+addressesOfJuanPerez
+
+	^ OrderedCollection with: self juanPerezAlemAddress! !
+
+!ImportTest methodsFor: 'addresses' stamp: 'TO 6/16/2022 23:16:30'!
+addressesOfPepeSanchez
+
+	^ OrderedCollection with: self pepeSanchezSanMartinAddress with: self pepeSanchezMaipuAddress! !
+
+!ImportTest methodsFor: 'addresses' stamp: 'TO 6/16/2022 23:24:43'!
 juanPerezAlemAddress
 
 	^ self address: 'Alem' number: 1122 town: 'CABA' zipCode: 1001 province: 'CABA'.
 	! !
 
-!ImportTest methodsFor: 'addresses' stamp: 'To 6/16/2022 21:33:38'!
+!ImportTest methodsFor: 'addresses' stamp: 'TO 6/16/2022 23:24:58'!
 pepeSanchezMaipuAddress
 
 	^ self address: 'Maipu' number: 888 town: 'Florida' zipCode: 1122 province: 'Buenos Aires'! !
 
-!ImportTest methodsFor: 'addresses' stamp: 'To 6/16/2022 21:30:50'!
+!ImportTest methodsFor: 'addresses' stamp: 'TO 6/16/2022 23:25:09'!
 pepeSanchezSanMartinAddress
 
 	^ self address: 'San Martin' number: 3322 town: 'Olivos' zipCode: 1636 province: 'BsAs'! !
@@ -70,34 +78,27 @@ customerNamed: aName lastName: aLastName identifiedAs: anIdentificationType numb
 
 	^ Customer new firstName: aName;  lastName: aLastName;  identificationType: anIdentificationType; identificationNumber: anIdentificationNumber! !
 
-!ImportTest methodsFor: 'customers' stamp: 'To 6/16/2022 21:35:03'!
+!ImportTest methodsFor: 'customers' stamp: 'TO 6/16/2022 23:24:26'!
 juanPerez
 
-	| juan |
-	juan := self customerNamed: 'Juan' lastName: 'Perez' identifiedAs: 'C' number: '23-25666777-9'.
-	juan addAddress: self juanPerezAlemAddress.
-	
-	^ juan! !
+	^ self customerNamed: 'Juan' lastName: 'Perez' identifiedAs: 'C' number: '23-25666777-9'.
+	! !
 
-!ImportTest methodsFor: 'customers' stamp: 'To 6/16/2022 21:31:26'!
+!ImportTest methodsFor: 'customers' stamp: 'TO 6/16/2022 23:24:13'!
 pepeSanchez
 
-	| pepe |
-	pepe := self customerNamed: 'Pepe' lastName: 'Sanchez' identifiedAs: 'D' number: '22333444'.
-	pepe addAddress: self pepeSanchezSanMartinAddress.
-	pepe addAddress: self pepeSanchezMaipuAddress.
-	
-	^ pepe! !
+	^ self customerNamed: 'Pepe' lastName: 'Sanchez' identifiedAs: 'D' number: '22333444'.
+	! !
 
 
-!ImportTest methodsFor: 'tests' stamp: 'To 6/16/2022 21:46:19'!
+!ImportTest methodsFor: 'tests' stamp: 'TO 6/16/2022 23:23:20'!
 test01Import
 
 	(CustomerImporter from: self validData into: session) value.
 	
 	self assert: 2 equals: (session selectAllOfType: Customer) size.
-	self assertHasImportedPepeSanchez.
-	self assertHasImportedJuanPerez.! !
+	self assertHasImported: self pepeSanchez withAddresses: self addressesOfPepeSanchez.
+	self assertHasImported: self juanPerez withAddresses: self addressesOfJuanPerez.! !
 
 
 !ImportTest methodsFor: 'set up / tear down' stamp: 'To 6/16/2022 19:42:28'!
@@ -113,11 +114,11 @@ tearDown
 	session close! !
 
 
-!ImportTest methodsFor: 'support' stamp: 'To 6/16/2022 20:28:29'!
+!ImportTest methodsFor: 'support' stamp: 'TO 6/16/2022 23:35:28'!
 customerIdentifiedAs: anIdentificationType number: anIdentificationNumber 
 
-	^ (session select: [:aCustomer | 
-		aCustomer identificationType = anIdentificationType and: [aCustomer identificationNumber = anIdentificationNumber]] 
+	^ (session 
+		select: [:aCustomer | aCustomer identifiesWith: anIdentificationType number:anIdentificationNumber ] 
 		ofType: Customer) anyOne! !
 
 !ImportTest methodsFor: 'support' stamp: 'To 6/16/2022 20:32:59'!
@@ -263,6 +264,11 @@ identificationType
 identificationType: anIdentificationType
 
 	identificationType := anIdentificationType! !
+
+!Customer methodsFor: 'identification' stamp: 'TO 6/16/2022 23:36:03'!
+identifiesWith: anIdentificationType number: anIdentificationNumber
+	
+	^ identificationType = anIdentificationType and: [ identificationNumber = anIdentificationNumber]! !
 
 
 !Customer methodsFor: 'initialization' stamp: 'HAW 5/22/2022 00:19:29'!
